@@ -54,3 +54,4 @@ node_modules/
 
 # Payload local upload dir (Vercel Blob in production)
 /media
+.env*

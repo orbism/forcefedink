@@ -4,6 +4,17 @@ Things that cost time or would have been wrong if assumed. Newest first.
 
 ---
 
+## Prisma Postgres on Vercel provides `DATABASE_URL`, not `DATABASE_URI`
+
+Payload's templates name the variable `DATABASE_URI`; the Vercel Marketplace Prisma Postgres
+integration injects `DATABASE_URL` (a direct `postgres://` URL). The first Vercel build with
+migrations failed the env check because only the integration's name was populated.
+`src/lib/env.ts` now takes the first non-blank of DATABASE_URI → DATABASE_URL → POSTGRES_URL,
+and rejects `prisma+postgres://` (Accelerate is an HTTP proxy; Drizzle can't use it) with a
+message saying so. `PAYLOAD_SECRET` has no fallback — it signs sessions — and must be set.
+
+---
+
 ## Vercel defines env vars as empty strings — `??` does not catch them
 
 Vercel build failed with `TypeError: Invalid URL … input: ''` from next.config: the project had
