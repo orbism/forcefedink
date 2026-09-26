@@ -18,7 +18,7 @@ Running state. Plan lives at `~/.claude/plans/rules-1-be-short-magical-stroustru
 | 6 | Pages: landing, drops, archive, artwork, static set | **done** |
 | 7 | Enquiry + mailing list: server actions, zod, honeypot, Resend | **done** |
 | 8 | Polish: SEO/OG, responsive, reduced-motion, Lighthouse | partial — reduced-motion + responsive verified; Lighthouse not run |
-| 9 | Deploy: Vercel + Prisma Postgres + Blob | todo |
+| 9 | Deploy: Vercel + Prisma Postgres + Blob | in progress — migrations wired |
 
 ## Environment (verified)
 
@@ -129,6 +129,20 @@ FAQ: shipping callout, numbered sections with rules, squiggle rule under each qu
   `subscribers`. Honeypot + zod + per-IP rate limit in place.
 - `prefers-reduced-motion: reduce` → veils `display:none`, nothing hidden, no animation.
 - No horizontal overflow at 390 / 1280.
+
+## Deploy / migrations
+
+- `src/migrations/20260926_195338_initial.ts`: full schema (21 tables). Verified on a throwaway
+  DB: applies cleanly, re-running is a no-op.
+- Vercel runs `pnpm run ci` (`vercel.json`) = `payload migrate` then `next build`. Local
+  `pnpm build` does **not** migrate — the local DB was built by dev-mode push (marker
+  `dev|-1` in payload_migrations) and Payload would stop to ask if migrate ran against it.
+- **Every schema change** (collections/fields/globals): run `pnpm migrate:create <name>` and
+  commit the new migration, or production drifts from the code.
+- Vercel needs: `DATABASE_URI` (Prisma Postgres *direct TCP* URL, `?sslmode=require`),
+  `PAYLOAD_SECRET`. Optional: `BLOB_READ_WRITE_TOKEN` (else uploads go to the ephemeral disk
+  and vanish), `RESEND_API_KEY`, `NEXT_PUBLIC_SERVER_URL` (else derived from Vercel's vars).
+- Production DB starts empty: content must be created in /admin, seeded, or copied over.
 
 ## Open threads
 

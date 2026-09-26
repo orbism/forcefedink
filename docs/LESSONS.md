@@ -4,6 +4,20 @@ Things that cost time or would have been wrong if assumed. Newest first.
 
 ---
 
+## Vercel defines env vars as empty strings — `??` does not catch them
+
+Vercel build failed with `TypeError: Invalid URL … input: ''` from next.config: the project had
+`NEXT_PUBLIC_SERVER_URL` defined but blank, and `process.env.X ?? 'fallback'` only falls back
+on undefined, so `new URL('')` threw. Four call sites had the same shape, and env.ts also
+defaulted to a stale localhost:3000 — which would have pointed Payload's serverURL at localhost
+in production.
+
+All now go through `src/lib/site-url.ts`: a non-blank `NEXT_PUBLIC_SERVER_URL`, else Vercel's
+system vars (`VERCEL_PROJECT_PRODUCTION_URL` on production, `VERCEL_URL` on previews), else
+localhost:3100. Verified by loading next.config under each env combination.
+
+---
+
 ## React `<ViewTransition>` never fired on Next 16.3 navigations
 
 The Next docs say view transitions "work in the App Router with no configuration". Here,

@@ -17,7 +17,8 @@
     "migrate:create": "node --no-deprecation --env-file-if-exists=.env node_modules/payload/bin.js migrate:create",
     "seed": "node --no-deprecation --env-file-if-exists=.env --import=tsx/esm scripts/seed.ts",
     "motif": "node scripts/ingest-motif.mjs",
-    "texture": "node scripts/gen-texture.mjs"
+    "texture": "node scripts/gen-texture.mjs",
+    "ci": "pnpm run migrate && pnpm run build"
   },
   "dependencies": {
     "@payloadcms/db-postgres": "3.88.0",

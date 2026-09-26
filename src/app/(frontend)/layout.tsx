@@ -7,6 +7,7 @@ import { Header } from '@/components/site/Header'
 import { InkDefs } from '@/ink/InkDefs'
 import { NavExit } from '@/motion/NavExit'
 import { getSiteSettings } from '@/lib/queries'
+import { siteUrl } from '@/lib/site-url'
 import '@/styles/tokens.css'
 import '@/styles/base.css'
 
@@ -24,7 +25,7 @@ const inter = Inter({
 })
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SERVER_URL ?? 'http://localhost:3100'),
+  metadataBase: new URL(siteUrl()),
   title: {
     default: 'Force Fed Ink · Christopher Edward Wedemire',
     template: '%s · Force Fed Ink',

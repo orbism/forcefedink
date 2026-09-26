@@ -1,5 +1,7 @@
 import type { Drop, Media, Original } from '@/payload-types'
 
+import { siteUrl } from './site-url'
+
 export const money = (n?: number | null) =>
   typeof n === 'number' ? `$${n.toLocaleString('en-US')}` : null
 
@@ -48,9 +50,8 @@ export const asDoc = <T,>(v: T | number | string | null | undefined): T | null =
  * are a different origin and stay absolute, matched by remotePatterns.
  */
 const sameOriginRelative = (url: string) => {
-  const base = process.env.NEXT_PUBLIC_SERVER_URL
-  if (base && url.startsWith(base)) return url.slice(base.length) || '/'
-  return url
+  const base = siteUrl()
+  return url.startsWith(base) ? url.slice(base.length) || '/' : url
 }
 
 export const mediaUrl = (m: unknown, size?: 'thumb' | 'card' | 'full') => {

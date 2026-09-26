@@ -3,13 +3,14 @@ import type { NextConfig } from 'next'
 import path from 'path'
 import { fileURLToPath } from 'url'
 
+import { siteUrl } from './src/lib/site-url'
+
 const __filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(__filename)
 
 // Payload serves media as absolute URLs (serverURL locally, Vercel Blob in production),
 // so both origins have to be allowed for next/image.
-const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL ?? 'http://localhost:3100'
-const { hostname, protocol, port } = new URL(serverUrl)
+const { hostname, protocol, port } = new URL(siteUrl())
 
 const nextConfig: NextConfig = {
   images: {
