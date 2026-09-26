@@ -1,0 +1,64 @@
+/*
+ * Shared ink behaviour. Every ink piece is two stacked SVGs: a crisp layer (the mark itself)
+ * and a blurred bloom layer (the wet halo). The mark hits fast; afterwards everything moves
+ * only by transform and opacity on those two layers, so the slow watercolor spread runs on
+ * the compositor — smooth, and the SVG filters are rasterised once, not every frame.
+ */
+.root { position: absolute; pointer-events: none; }
+.root > svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+
+.crisp, .bloom { will-change: transform, opacity; transform-origin: var(--ox) var(--oy); }
+.bloom { opacity: 0; }
+
+/* --- splatter ------------------------------------------------------------- */
+.splat { aspect-ratio: 640 / 360; }
+
+.core, .streak, .speck { opacity: 0; transform-box: view-box; }
+.core { transform-origin: var(--cx) var(--cy); }
+.streak { transform-origin: var(--sx) var(--sy); }
+.speck { transform-box: fill-box; transform-origin: center; }
+
+.splat[data-hit] .core { animation: core-hit 240ms cubic-bezier(0.2, 1.4, 0.4, 1) both; }
+.splat[data-hit] .streak { animation: streak-fly 340ms cubic-bezier(0.1, 0.9, 0.2, 1) var(--at, 0ms) both; }
+.splat[data-hit] .speck { animation: speck-fly var(--fly, 360ms) cubic-bezier(0.1, 0.9, 0.2, 1) var(--at, 0ms) both; }
+.splat[data-hit] .crisp { animation: settle 34s linear 1.2s both; }
+.splat[data-hit] .bloom { animation: bloom 36s cubic-bezier(0.05, 0.7, 0.2, 1) 120ms both; }
+
+@keyframes core-hit { from { opacity: 0; transform: scale(0.35); } to { opacity: 1; transform: none; } }
+@keyframes streak-fly { from { opacity: 0; transform: scale(0); } 15% { opacity: 1; } to { opacity: 1; transform: none; } }
+@keyframes speck-fly {
+  from { opacity: 0; translate: var(--dx) var(--dy); scale: 0.3; }
+  20% { opacity: 1; }
+  to { opacity: 1; translate: 0 0; scale: 1; }
+}
+
+/* The mark dries lighter; the wet halo creeps out and thins away. */
+@keyframes settle { from { opacity: 1; } to { opacity: 0.74; } }
+@keyframes bloom {
+  0% { opacity: 0; transform: scale(0.97); }
+  5% { opacity: 0.3; transform: scale(1); }
+  100% { opacity: 0.07; transform: scale(1.15); }
+}
+
+/* --- spill ---------------------------------------------------------------- */
+.spill { aspect-ratio: 1; }
+.pool { position: absolute; }
+.pool > svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.spill .crisp { opacity: 0; }
+.spill[data-in] .crisp { animation: spill-in 900ms ease-out both, spill-spread var(--spread, 48s) cubic-bezier(0.04, 0.6, 0.25, 1) 200ms both; }
+.spill[data-in] .bloom { animation: spill-bloom calc(var(--spread, 48s) + 4s) cubic-bezier(0.04, 0.6, 0.25, 1) both; }
+
+@keyframes spill-in { from { opacity: 0; } to { opacity: 0.8; } }
+/* Composes with spill-in: opacity from one, transform from the other. */
+@keyframes spill-spread { from { transform: scale(1); } to { transform: scale(1.08); opacity: 0.62; } }
+@keyframes spill-bloom {
+  0% { opacity: 0; transform: scale(1.01); }
+  3% { opacity: 0.42; }
+  100% { opacity: 0.08; transform: scale(1.22); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .core, .streak, .speck, .spill .crisp { opacity: 1; }
+  .root[data-hit] *, .root[data-in] * { animation: none !important; }
+  .bloom { opacity: 0.3; }
+}

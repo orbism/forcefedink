@@ -1,0 +1,35 @@
+.form { display: grid; gap: var(--s-4); max-width: 34rem; }
+
+.field { display: grid; gap: var(--s-2); }
+
+.input,
+.textarea,
+.select {
+  width: 100%;
+  padding: 0.7rem 0.85rem;
+  font: inherit;
+  color: var(--gold);
+  background: var(--ink-deep);
+  border: 1px solid var(--line-soft);
+  border-radius: 0;
+}
+.input:focus, .textarea:focus, .select:focus { border-color: var(--gold); outline: none; }
+.textarea { min-height: 8rem; resize: vertical; }
+.select { appearance: none; }
+
+/* Off-screen rather than display:none — bots skip hidden inputs. */
+.honey {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.status { margin: 0; font-size: var(--t-sm); }
+.status[data-tone='ok'] { color: var(--gold-hot); }
+.status[data-tone='error'] { color: #e2a3a3; }
+
+.inline { display: flex; gap: var(--s-2); align-items: stretch; }
+.inline .input { flex: 1; }
+.inline button { margin-top: 0; width: auto; white-space: nowrap; }

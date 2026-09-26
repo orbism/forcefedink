@@ -1,0 +1,64 @@
+.root {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-rows: 1fr auto;
+  gap: var(--s-4);
+  padding: var(--s-8) clamp(3.5rem, 6vw, 5.5rem) var(--s-6);
+}
+
+.viewport { position: relative; overflow: hidden; min-height: 0; touch-action: pan-y; }
+
+.track {
+  display: flex;
+  height: 100%;
+  transition: translate 720ms var(--ease-ink);
+}
+
+.slide { position: relative; flex: 0 0 100%; height: 100%; }
+/* The piece in full: contained, never cropped, with a soft shadow to lift it off the ground. */
+.slide img { object-fit: contain; filter: drop-shadow(0 18px 38px rgb(0 0 0 / 0.45)); }
+
+/* Arrows flank the image. */
+.arrow {
+  position: absolute;
+  top: 50%;
+  translate: 0 -50%;
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 50%;
+  color: var(--gold);
+  border: 1px solid var(--line);
+  background: color-mix(in srgb, var(--ink) 70%, transparent);
+  backdrop-filter: blur(6px);
+  transition: color 200ms linear, border-color 200ms linear, scale 200ms var(--ease-ink);
+}
+.arrow:hover { color: var(--gold-hot); border-color: var(--gold-hot); scale: 1.06; }
+.prev { left: var(--s-3); }
+.next { right: var(--s-3); }
+
+/* Tabs: the active slide is a capsule, the rest are dots. */
+.tabs { display: flex; justify-content: center; align-items: center; gap: 0.6rem; }
+.tab {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 999px;
+  background: var(--gold-dim);
+  opacity: 0.55;
+  transition: width 420ms var(--ease-ink), opacity 200ms linear, background 200ms linear;
+}
+.tab:hover { opacity: 0.9; }
+.tab[aria-current='true'] { width: 1.9rem; opacity: 1; background: var(--gold-hot); }
+
+@media (max-width: 760px) {
+  .root { padding: var(--s-4) 3rem var(--s-3); }
+  .arrow { width: 2.25rem; height: 2.25rem; }
+  .prev { left: var(--s-2); }
+  .next { right: var(--s-2); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .track, .tab { transition: none; }
+}

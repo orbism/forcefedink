@@ -1,0 +1,28 @@
+.head { position: relative; display: grid; gap: var(--s-3); }
+
+.eyebrow { margin: 0; }
+
+/* Sized to the title itself, so the splash can be placed relative to where the text ends. */
+.titleWrap { position: relative; width: fit-content; max-width: 100%; isolation: isolate; }
+
+/* Impact point sits just past the end of the title, thrown away from it. */
+.splat { z-index: -1; left: calc(100% + 2.5rem); top: 55%; width: 30rem; opacity: 0.92; }
+
+.title {
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-size: var(--t-xl);
+  line-height: 1.06;
+  color: var(--gold-hot);
+  margin: 0;
+  /* A thin dark outline painted behind the fill, plus a soft shadow: the title holds up
+     over ink and pattern without looking boxed. */
+  -webkit-text-stroke: 2.5px rgb(12 11 14 / 0.7);
+  paint-order: stroke fill;
+  text-shadow: 0 1px 16px rgb(20 19 23 / 0.85);
+}
+.detail { color: var(--gold); font-size: var(--t-sm); margin: 0; max-width: 38ch; }
+
+@media (max-width: 760px) {
+  .splat { left: calc(100% - 2rem); top: 70%; width: min(24rem, 80vw); }
+}

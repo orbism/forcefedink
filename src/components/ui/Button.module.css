@@ -1,0 +1,31 @@
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s-2);
+  width: 100%;
+  padding: 0.85rem 1.25rem;
+  margin-top: var(--s-6);
+  font-family: var(--font-ui);
+  font-size: var(--t-xs);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--ink);
+  background: var(--gold);
+  border: 1px solid var(--gold);
+  transition: background 200ms linear, color 200ms linear;
+}
+.btn:hover { background: var(--gold-hot); border-color: var(--gold-hot); color: var(--ink); }
+
+.ghost {
+  color: var(--gold);
+  background: transparent;
+}
+.ghost:hover { background: transparent; color: var(--gold-hot); border-color: var(--gold-hot); }
+
+.disabled {
+  color: var(--sold);
+  background: transparent;
+  border-color: color-mix(in srgb, var(--sold) 45%, transparent);
+  cursor: not-allowed;
+}

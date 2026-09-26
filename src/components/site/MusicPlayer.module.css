@@ -1,0 +1,65 @@
+/* Mute button is always visible; the rest of the player slides out from behind it. */
+.player {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+}
+
+.toggle {
+  display: grid;
+  place-items: center;
+  width: 1.9rem;
+  height: 1.9rem;
+  color: var(--gold);
+  flex: none;
+}
+.toggle:hover { color: var(--gold-hot); }
+
+.tray {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  max-width: 0;
+  opacity: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  transition: max-width 420ms var(--ease-ink), opacity 260ms linear;
+}
+.player[data-open='true'] .tray { max-width: 22rem; opacity: 1; }
+
+.play {
+  display: grid;
+  place-items: center;
+  width: 1.6rem;
+  height: 1.6rem;
+  color: var(--gold);
+  flex: none;
+}
+
+.title {
+  font-size: var(--t-xs);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--gold-dim);
+  max-width: 12rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.seek {
+  width: 6rem;
+  height: 2px;
+  background: var(--line);
+  position: relative;
+  flex: none;
+}
+.seek > span {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: var(--gold);
+  width: var(--progress, 0%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tray { transition: none; }
+}

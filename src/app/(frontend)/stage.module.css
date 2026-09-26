@@ -1,0 +1,14 @@
+/* Shared canvas-content styles for stage pages. */
+.groupTitle {
+  font-family: var(--font-display);
+  font-size: var(--t-md);
+  color: var(--gold);
+  margin: var(--s-10) 0 var(--s-4);
+}
+.groupTitle:first-child { margin-top: 0; }
+.lede { color: var(--haze); max-width: var(--measure); }
+.empty { color: var(--gold-dim); }
+
+/* Contact: the spill pours in from the top-left corner, under the title. */
+.spill { left: -5vw; top: -8dvh; width: min(56vw, 820px); }
+@media (max-width: 760px) { .spill { left: -20vw; top: -6dvh; width: 110vw; } }

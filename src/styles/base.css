@@ -1,0 +1,117 @@
+*, *::before, *::after { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+/* Every page is a fixed full-viewport stage: the chrome is fixed and content scrolls
+   inside the canvas, so the document itself must never scroll. */
+html, body { height: 100%; overflow: hidden; }
+
+body {
+  margin: 0;
+  background: var(--ink);
+  color: var(--gold);
+  font-family: var(--font-ui);
+  font-size: var(--t-body);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Site-wide paper tooth. Fixed so it reads as the surface the page is printed on
+   rather than something that scrolls with the content. */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image: var(--tex-paper);
+  background-size: 256px 256px;
+  opacity: 0.14;
+  mix-blend-mode: overlay;
+}
+
+h1, h2, h3, h4 {
+  font-family: var(--font-display);
+  font-weight: 300;
+  line-height: 1.1;
+  margin: 0;
+  letter-spacing: 0.01em;
+}
+
+p { margin: 0 0 var(--s-4); max-width: var(--measure); }
+
+a { color: inherit; text-decoration: none; }
+a:hover { color: var(--gold-hot); }
+
+img, svg { display: block; max-width: 100%; }
+
+button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
+
+::selection { background: var(--gold); color: var(--ink); }
+
+:focus-visible {
+  outline: 1px solid var(--gold-hot);
+  outline-offset: 3px;
+}
+
+/* --- reusable surfaces ---------------------------------------------------- */
+
+/* Any panel that carries text. Canvas weave under, hairline around. */
+.surface {
+  position: relative;
+  background-color: var(--indigo);
+  isolation: isolate;
+}
+.surface::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-image: var(--tex-canvas);
+  background-size: 256px 256px;
+  opacity: 0.18;
+  mix-blend-mode: overlay;
+  pointer-events: none;
+}
+
+/* Small caps UI label — nav, meta, prices, buttons. */
+.label {
+  font-family: var(--font-ui);
+  font-size: var(--t-xs);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--gold-dim);
+}
+
+.rule { height: 1px; background: var(--line-soft); border: 0; margin: 0; }
+
+.wrap {
+  width: 100%;
+  max-width: 82rem;
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* Do NOT put this on anything containing a scroll-revealed motif: a skipped
+   content-visibility subtree reports its descendants as not intersecting, so the
+   IntersectionObserver never fires and the ink never draws. Safe for static blocks only. */
+.defer { content-visibility: auto; contain-intrinsic-size: auto 60vh; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+

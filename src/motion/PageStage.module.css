@@ -1,0 +1,232 @@
+/*
+ * Every page is one full-viewport composition: fixed chrome top and bottom, a title that
+ * types in top left, zellij drawn top right, and a canvas that slides in carrying the
+ * page's actual content.
+ */
+.stage {
+  /* Resting sheet height, and how tall it may grow as the reader scrolls (--p: 0 → 1). */
+  --sheet: 50dvh;
+  --sheet-max: calc(100dvh - var(--header-h) - var(--footer-h) - 7dvh);
+  --p: 0;
+  position: relative;
+  height: 100dvh;
+  overflow: hidden;
+}
+
+/* Bounded by the canvas so the two can never overlap. Only the bottom edge clips —
+   the splash behind the title is free to fly up, left and right. */
+.topLeft {
+  position: absolute;
+  top: calc(var(--header-h) + var(--s-6));
+  left: var(--gutter);
+  right: var(--gutter);
+  bottom: calc(var(--footer-h) + var(--s-4));
+  z-index: 3;
+  max-width: min(44rem, 58vw);
+  clip-path: inset(-100vh -100vw 0 -100vw);
+}
+
+.stage[data-from='bottom'] .topLeft { bottom: calc(var(--sheet) + var(--footer-h) + var(--s-4)); }
+.stage[data-from='left'] .topLeft { left: calc(min(52vw, 46rem) + var(--gutter)); }
+.stage[data-from='right'] .topLeft { right: calc(min(52vw, 46rem) + var(--gutter)); }
+
+/*
+ * The free area not covered by the canvas. The pattern starts in its top-right corner and
+ * grows until it fills this box; --motif is the size of the corner piece.
+ */
+.topRight {
+  --motif: min(52vmin, 560px);
+  position: absolute;
+  z-index: 1;
+  top: var(--header-h);
+  left: 0;
+  right: 0;
+  bottom: var(--footer-h);
+  opacity: 0.9;
+}
+.stage[data-from='bottom'] .topRight { bottom: calc(var(--sheet) + var(--footer-h)); }
+.stage[data-from='right'] .topRight { right: min(52vw, 46rem); }
+.stage[data-from='left'] .topRight { left: min(52vw, 46rem); }
+
+.backdrop { position: absolute; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+:global(html[data-leaving]) .backdrop { opacity: 0; transition: opacity 220ms ease-in; }
+
+.canvas {
+  position: absolute;
+  /* Above the head: as the sheet grows it slides over the hero, never under it. */
+  z-index: 4;
+  background-color: var(--canvas);
+  will-change: transform;
+  /* Slight overshoot on arrival: the sheet is thrown in and settles. */
+  transition: transform var(--slide-dur, 760ms) cubic-bezier(0.18, 1.12, 0.32, 1);
+  isolation: isolate;
+}
+
+/* Torn leading edge, outside the sheet so the content box stays square. */
+.deckle { position: absolute; pointer-events: none; overflow: visible; }
+.deckleFill { fill: var(--canvas); }
+.deckleLine {
+  fill: none;
+  stroke: var(--gold);
+  stroke-opacity: 0.4;
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+.deckleMobile { display: none; position: absolute; left: 0; right: 0; bottom: 100%; width: 100%; height: 16px; overflow: visible; }
+.canvas[data-side='bottom'] .deckle { left: 0; right: 0; bottom: 100%; width: 100%; height: 16px; }
+.canvas[data-side='left'] .deckle { top: 0; bottom: 0; left: 100%; width: 16px; height: 100%; }
+.canvas[data-side='right'] .deckle { top: 0; bottom: 0; right: 100%; width: 16px; height: 100%; }
+
+/* Canvas weave, so it reads as material rather than a coloured box. */
+.canvas::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-image: var(--tex-canvas);
+  background-size: 256px 256px;
+  opacity: 0.2;
+  mix-blend-mode: overlay;
+  pointer-events: none;
+}
+
+.scroll {
+  height: 100%;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: var(--s-8) clamp(1.25rem, 3vw, 3rem);
+}
+
+/* --- slide directions ----------------------------------------------------- */
+
+.canvas[data-side='bottom'] {
+  left: 0;
+  right: 0;
+  bottom: var(--footer-h);
+  /* Built at full grown height, parked down by the slack; scrolling takes up the slack.
+     `translate` carries the scroll, `transform` the enter/exit — they compose. */
+  height: var(--sheet-max);
+  translate: 0 calc((1 - var(--p)) * (var(--sheet-max) - var(--sheet)));
+  transform: translate3d(0, calc(100% + 20px), 0);
+}
+
+.canvas[data-side='left'] {
+  left: 0;
+  top: var(--header-h);
+  bottom: var(--footer-h);
+  width: min(52vw, 46rem);
+  transform: translate3d(calc(-100% - 20px), 0, 0);
+}
+
+.canvas[data-side='right'] {
+  right: 0;
+  top: var(--header-h);
+  bottom: var(--footer-h);
+  width: min(52vw, 46rem);
+  transform: translate3d(calc(100% + 20px), 0, 0);
+}
+
+.stage[data-entered='true'] .canvas { transform: translate3d(0, 0, 0); }
+
+/*
+ * With a right-hand canvas the zellij would sit behind it, so it moves to the inner edge
+ * of the free half and the head narrows to make room. A left-hand canvas leaves the
+ * right corner free, so the decoration stays where it is.
+ */
+/*
+ * Side flows leave the head about half the width, so the decoration shrinks and the
+ * title steps down a size. Sizing the head in `ch` was wrong here: ch resolves against
+ * the container's UI font, not the much larger display face, so the title overflowed and
+ * was clipped.
+ */
+.stage[data-from='right'] .topRight,
+.stage[data-from='left'] .topRight { --motif: min(38vmin, 400px); }
+
+.stage[data-from='right'] .topLeft,
+.stage[data-from='left'] .topLeft {
+  max-width: min(26rem, 34vw);
+  --t-xl: clamp(1.5rem, 2.9vw, 2.3rem);
+}
+
+@media (max-width: 760px) {
+  .stage[data-from='left'],
+  .stage[data-from='right'] { --sheet: 58dvh; }
+  .canvas[data-side='left'],
+  .canvas[data-side='right'] {
+    left: 0;
+    right: 0;
+    top: auto;
+    bottom: var(--footer-h);
+    width: auto;
+    height: var(--sheet-max);
+    translate: 0 calc((1 - var(--p)) * (var(--sheet-max) - var(--sheet)));
+    transform: translate3d(0, calc(100% + 20px), 0);
+  }
+  .canvas[data-side='left'] .deckle,
+  .canvas[data-side='right'] .deckle { display: none; }
+  .deckleMobile { display: block; }
+  .stage[data-from='left'] .topLeft,
+  .stage[data-from='right'] .topLeft {
+    left: var(--gutter);
+    right: var(--gutter);
+    bottom: calc(var(--sheet) + var(--footer-h) + var(--s-4));
+  }
+  /* Narrow screens put the pattern behind the title; it steps back so the type leads. */
+  .topRight,
+  .stage[data-from] .topRight { --motif: 64vmin; left: 0; right: 0; opacity: 0.4; }
+  .stage[data-from='left'] .topRight,
+  .stage[data-from='right'] .topRight { bottom: calc(var(--sheet) + var(--footer-h)); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .canvas { transform: none !important; transition: none; }
+}
+
+/* --- exit: everything accelerates away before the next page lays in (NavExit) --- */
+:global(html[data-leaving]) .topLeft {
+  opacity: 0;
+  filter: blur(10px);
+  transform: translate3d(-2%, -18px, 0) scale(0.97);
+  transition: opacity 200ms ease-in, filter 200ms ease-in, transform 220ms cubic-bezier(0.55, 0, 0.9, 0.4);
+}
+:global(html[data-leaving]) .topRight {
+  opacity: 0;
+  filter: blur(6px);
+  transform: scale(1.06);
+  transition: opacity 220ms ease-in, filter 220ms ease-in, transform 240ms cubic-bezier(0.55, 0, 0.9, 0.4);
+}
+:global(html[data-leaving]) .canvas {
+  transition: transform 240ms cubic-bezier(0.6, 0, 0.95, 0.35);
+}
+:global(html[data-leaving]) .canvas[data-side='bottom'] { transform: translate3d(0, calc(100% + 20px), 0); }
+:global(html[data-leaving]) .canvas[data-side='left'] { transform: translate3d(calc(-100% - 20px), 0, 0); }
+:global(html[data-leaving]) .canvas[data-side='right'] { transform: translate3d(calc(100% + 20px), 0, 0); }
+@media (max-width: 760px) {
+  :global(html[data-leaving]) .canvas[data-side] { transform: translate3d(0, calc(100% + 20px), 0); }
+}
+
+/* --- scroll: the hero eases up and dims as the sheet takes over --------------- */
+.headInner,
+.topRight > * {
+  translate: 0 calc(var(--p) * -3rem);
+  opacity: calc(1 - var(--p) * 0.55);
+  will-change: translate, opacity;
+}
+/* Side splits keep their layout on wide screens; the hero stays put. */
+@media (min-width: 761px) {
+  .stage[data-from='left'] .headInner,
+  .stage[data-from='right'] .headInner,
+  .stage[data-from='left'] .topRight > *,
+  .stage[data-from='right'] .topRight > * { translate: none; opacity: 1; }
+}
+
+/* Where the sheet grows, its lower part starts parked below the fold. Padding by that much
+   keeps the last content reachable at rest and guarantees there is scroll to grow with. */
+.stage[data-from='bottom'] .scroll { padding-bottom: calc(var(--sheet-max) - var(--sheet) + var(--s-8)); }
+@media (max-width: 760px) {
+  .stage .scroll { padding-bottom: calc(var(--sheet-max) - var(--sheet) + var(--s-8)); }
+}
+
+/* Detail pages: the free area shows the piece itself, fading up as the canvas arrives. */
+.showcase { opacity: 0; transition: opacity 700ms ease-out 200ms; }
+.showcase[data-entered] { opacity: 1; }

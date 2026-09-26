@@ -1,0 +1,56 @@
+/*
+ * A single pen draws the pattern shape by shape — rapid at first, decelerating to a slow
+ * crawl — until the visible area is full. Opacity per shape handles the distance fade.
+ */
+.wrap { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+
+.field {
+  position: absolute;
+  top: calc(var(--motif) * -0.1);
+  right: calc(var(--motif) * -0.14);
+  width: calc(var(--motif) * 3.6);
+  height: calc(var(--motif) * 3.6);
+}
+.svg { width: 100%; height: 100%; display: block; overflow: hidden; }
+
+.line {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.ink {
+  /* pathLength="1" normalises every path, so one dash length traces them all. */
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+}
+/* Switched on by the pen, one shape at a time. Linear: the pen's changing speed is baked
+   into each shape's duration. */
+g[data-on] > .ink {
+  stroke-dashoffset: 0;
+  transition: stroke-dashoffset var(--dur, 700ms) linear;
+}
+
+/* Strapwork: a gilded band with a channel cut down its centre in the ground colour. */
+.band.gold { stroke: url(#ink-sheen); }
+.band.white { stroke: var(--paper); }
+.band.haze { stroke: var(--haze); }
+.channel { stroke: var(--ink); }
+
+/* Interlace: a ground-coloured halo under each ribbon, so a later ribbon cuts a clean gap
+   through the one beneath — the over-under of lacería strapwork. */
+.halo { stroke: var(--ink); }
+
+/* Cuenca glaze: the well floods with a translucent wash once the pen has closed it. */
+.glaze {
+  fill: url(#ink-sheen);
+  stroke: none;
+  opacity: 0;
+  transition: opacity 1.8s ease-out;
+}
+g[data-on] > .glaze { opacity: 0.16; transition-delay: var(--dur, 0ms); }
+
+@media (prefers-reduced-motion: reduce) {
+  g[data-on] > .ink { transition: none; }
+}

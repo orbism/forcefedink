@@ -1,0 +1,73 @@
+/*
+ * Design tokens. Palette values are sampled from the artist's mockup, not eyeballed.
+ * Swap --font-display / --font-ui here to change the whole site's typography.
+ */
+:root {
+  color-scheme: dark;
+
+  /* --- ink & gold ------------------------------------------------------- */
+  --ink: #1b1a1e;        /* page ground — dark grey, not black */
+  --canvas: #26242b;     /* the panel that rises in: lighter than the ground */
+  --canvas-edge: #302e37; /* its top lip, so it reads as a sheet with thickness */
+  --ink-deep: #141317;   /* wells, image mattes — the only near-black left */
+  --indigo: #26242b;     /* legacy alias for .surface; same sheet as --canvas */
+  --gold: #ddd7a2;       /* wordmark, nav, primary text */
+  --gold-dim: #cbc695;   /* secondary text, meta */
+  --gold-hot: #f5e7a8;   /* hover, active linework */
+  --paper: #fdfdfd;      /* ink white — hairlines, the hamburger */
+  --haze: #eeeff7;       /* light purplish-blue white */
+
+  --line: color-mix(in srgb, var(--gold) 22%, transparent);
+  --line-soft: color-mix(in srgb, var(--gold) 12%, transparent);
+  --sold: #8b8272;       /* struck-through / unavailable */
+
+  /* --- type ------------------------------------------------------------- */
+  --font-display: var(--font-cormorant), 'Cormorant Garamond', Garamond, serif;
+  --font-ui: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+
+  --t-hero: clamp(2.5rem, 7vw, 5.5rem);
+  --t-xl: clamp(2.15rem, 4.8vw, 3.55rem);
+  --t-lg: clamp(1.5rem, 3vw, 2.125rem);
+  --t-md: clamp(1.125rem, 2vw, 1.5rem);
+  --t-body: 1rem;
+  --t-sm: 0.875rem;
+  --t-xs: 0.75rem;
+
+  --tracking-wide: 0.14em;   /* UI labels, small caps */
+  --tracking-hero: 0.06em;   /* the wordmark */
+
+  /* --- space ------------------------------------------------------------ */
+  --s-1: 0.25rem;
+  --s-2: 0.5rem;
+  --s-3: 0.75rem;
+  --s-4: 1rem;
+  --s-6: 1.5rem;
+  --s-8: 2rem;
+  --s-12: 3rem;
+  --s-16: 4rem;
+  --s-24: 6rem;
+  --gutter: clamp(1.25rem, 5vw, 5rem);
+  --measure: 62ch;
+
+  /* --- texture ---------------------------------------------------------- */
+  --tex-paper: url('/textures/paper-grain-256.png');
+  --tex-canvas: url('/textures/canvas-weave-256.png');
+
+  /* --- motion ----------------------------------------------------------- */
+  --dur-draw: 700ms;       /* linework draws in */
+  --dur-brush-in: 500ms;
+  --dur-brush-out: 400ms;
+  --dur-undraw: 350ms;     /* on scroll-out and on navigate */
+  --dur-text: 600ms;
+  --hold-min: 3000ms;      /* brushed motifs hold 3–5s before swapping */
+  --hold-max: 5000ms;
+  --ease-ink: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-out: cubic-bezier(0.33, 0, 0.16, 1);
+
+  --header-h: 5.25rem;
+  --footer-h: 2.75rem;
+}
+
+@media (max-width: 899px) {
+  :root { --header-h: 4.25rem; }
+}

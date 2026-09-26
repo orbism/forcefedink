@@ -1,0 +1,48 @@
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: grid;
+  place-items: center;
+  padding: var(--s-4);
+  background: color-mix(in srgb, var(--ink-deep) 78%, transparent);
+  backdrop-filter: blur(4px);
+  animation: fade 200ms linear;
+}
+
+.panel {
+  position: relative;
+  width: min(34rem, 100%);
+  max-height: 88dvh;
+  overflow-y: auto;
+  padding: var(--s-8);
+  background: var(--canvas);
+  border: 1px solid var(--line);
+  animation: rise 320ms var(--ease-ink);
+}
+
+.close {
+  position: absolute;
+  top: var(--s-3);
+  right: var(--s-3);
+  width: 2rem;
+  height: 2rem;
+  color: var(--gold-dim);
+  font-size: 1.1rem;
+  line-height: 1;
+}
+.close:hover { color: var(--gold-hot); }
+
+.title {
+  font-family: var(--font-display);
+  font-size: var(--t-lg);
+  color: var(--gold);
+  margin: 0 0 var(--s-6);
+}
+
+@keyframes fade { from { opacity: 0; } }
+@keyframes rise { from { opacity: 0; transform: translateY(12px); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .backdrop, .panel { animation: none; }
+}

@@ -1,0 +1,26 @@
+/* Thin fixed strip: player hard left, contact affordances hard right. */
+.footer {
+  position: fixed;
+  inset: auto 0 0;
+  z-index: 60;
+  height: var(--footer-h);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-4);
+  padding-inline: var(--gutter);
+  background: color-mix(in srgb, var(--ink) 82%, transparent);
+  backdrop-filter: blur(10px);
+  border-top: 1px solid var(--line-soft);
+}
+
+.right { display: flex; align-items: center; gap: var(--s-4); }
+
+.icon {
+  display: grid;
+  place-items: center;
+  width: 1.9rem;
+  height: 1.9rem;
+  color: var(--gold-dim);
+}
+.icon:hover { color: var(--gold-hot); }
