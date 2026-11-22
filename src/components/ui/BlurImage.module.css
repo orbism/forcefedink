@@ -1,0 +1,16 @@
+.lq {
+  position: absolute;
+  inset: 0;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  filter: blur(14px);
+  scale: 1.08;
+}
+.lq[data-fit='contain'] { background-size: contain; }
+/* Once the image is in, the preview goes: a contained image doesn't cover its blurred halo. */
+.lq { transition: opacity 700ms ease-out 300ms; }
+.lq[data-done] { opacity: 0; }
+
+.img { transition: opacity 520ms ease-out, scale 700ms var(--snap); }
+.img[data-pending] { opacity: 0; scale: 1.02; }

@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
 import { Ammonite } from './Ammonite'
-import { NAV } from './nav'
+import { CONTACT, NAV } from './nav'
 import styles from './Header.module.css'
 
 export function Header() {
@@ -39,6 +39,9 @@ export function Header() {
               {item.label}
             </Link>
           ))}
+          <Link href={CONTACT.href} className={styles.contact} aria-current={pathname.startsWith(CONTACT.href) ? 'page' : undefined}>
+            {CONTACT.label}
+          </Link>
         </nav>
 
         <button
@@ -57,7 +60,7 @@ export function Header() {
       </header>
 
       <nav id="site-menu" className={styles.drawer} hidden={!open} aria-label="Primary">
-        {NAV.map((item, i) => (
+        {[...NAV, CONTACT].map((item, i) => (
           <Link
             key={item.href}
             href={item.href}

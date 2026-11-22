@@ -26,7 +26,7 @@ const OFFSET_Y = 100
  * (a shape every few seconds) and holds it. The earlier curve fell to a crawl too abruptly.
  */
 const FAST = 9000
-const RHYTHM = 180
+const RHYTHM = 220
 const SETTLE = 700
 /** How strongly the pen prefers the corner over staying next to its last shape — high keeps
  *  the early cluster compact instead of sprawling sideways along a short band. */
@@ -36,10 +36,12 @@ const PULL = 0.9
  *  than stretched across however wide the free area happens to be. */
 const FAR_OPACITY = 0.14
 const FADE_REACH = 1700
-/** Each shape gets its own spatial cell's filter, so only the area under the pen repaints. */
-const CELL = 400
 /** When nothing on screen is left to draw, look again this often (a resize may reveal more). */
 const IDLE_MS = 1000
+/** Construction leads the ink: compass and rule go down first, the pen inks over them. */
+const GUIDE_LEAD = 0.3
+const GUIDE_MIN = 40
+const GUIDE_MAX = 350
 
 /** Time (ms) to draw `len` units starting `t0` ms into the drawing. */
 function travel(t0: number, len: number, burst: number) {
@@ -55,7 +57,7 @@ function travel(t0: number, len: number, burst: number) {
 }
 
 /**
- * Gilded strapwork drawn live by a single pen: one complete shape at a time, each adjoining
+ * Engraved gilt strapwork drawn live by a single pen: one complete shape at a time, each adjoining
  * the last, fast at first then slowing to a steady crawl, fading with distance.
  *
  * Every shape is in the DOM from the start, undrawn. The pen chooses each next shape at the
@@ -75,15 +77,7 @@ export function DrawGeometry({ name, drawn, burst = 1 }: Props) {
     if (!mounted) return null
     const g = pattern(name, 1000 * FIELD)
     const { tiles, neighbours } = tilesOf(g.paths, g.dists)
-    const cells = new Map<string, number[]>()
-    tiles.forEach((t, i) => {
-      const [x, y] = t.pts[0]
-      const k = `${Math.floor(x / CELL)},${Math.floor(y / CELL)}`
-      const list = cells.get(k)
-      if (list) list.push(i)
-      else cells.set(k, [i])
-    })
-    return { viewBox: g.viewBox, finish: g.finish, tiles, neighbours, cells: [...cells.values()] }
+    return { viewBox: g.viewBox, finish: g.finish, tiles, neighbours }
   }, [mounted, name])
 
   // Visible box in viewBox units, kept current for the pen.
@@ -132,16 +126,18 @@ export function DrawGeometry({ name, drawn, burst = 1 }: Props) {
       const g = byIndex.get(next.t)!
       const d = pathFrom(tile, next.entry)
       const dur = instant ? 0 : Math.max(60, Math.round(travel(performance.now() - t0, tile.len, burst)))
+      const lead = instant ? 0 : Math.round(Math.min(GUIDE_MAX, Math.max(GUIDE_MIN, dur * GUIDE_LEAD)))
       g.setAttribute('opacity', (1 - (1 - FAR_OPACITY) * Math.min(1, tile.dist / FADE_REACH) ** 0.75).toFixed(2))
       g.style.setProperty('--dur', `${dur}ms`)
-      for (const p of g.children) p.setAttribute('d', d)
+      g.style.setProperty('--lead', `${lead}ms`)
+      for (const p of g.children) p.setAttribute('d', p.hasAttribute('data-guide') ? tile.guide : d)
       // Commit the undrawn state for the new path before switching the ink on.
       void g.getBoundingClientRect()
       g.dataset.on = ''
 
       const pts = tile.pts
       pen = next.entry < pts.length ? pts[next.entry] : pts[0]
-      timer = window.setTimeout(step, dur)
+      timer = window.setTimeout(step, lead + dur)
     }
     step()
     return () => window.clearTimeout(timer)
@@ -152,21 +148,15 @@ export function DrawGeometry({ name, drawn, burst = 1 }: Props) {
       <div ref={fieldRef} className={styles.field}>
         {field && (
           <svg ref={svgRef} className={styles.svg} viewBox={field.viewBox} aria-hidden="true">
-            {field.cells.map((cell, c) => (
-              <g key={c} filter="url(#ink-line)">
-                {cell.map((i) => {
-                  const t = field.tiles[i]
-                  return (
-                    <g key={i} data-shape={i}>
-                      {field.finish.glaze && t.kind === 0 && <path className={styles.glaze} />}
-                      {field.finish.interlace && (
-                        <path className={`${styles.line} ${styles.ink} ${styles.halo}`} pathLength={1} strokeWidth={9 * t.weight} />
-                      )}
-                      <path className={`${styles.line} ${styles.ink} ${styles.band} ${styles[t.hue]}`} pathLength={1} strokeWidth={5.5 * t.weight} />
-                      <path className={`${styles.line} ${styles.ink} ${styles.channel}`} pathLength={1} strokeWidth={1.8 * t.weight} />
-                    </g>
-                  )
-                })}
+            {field.tiles.map((t, i) => (
+              <g key={i} data-shape={i}>
+                <path data-guide="" className={`${styles.line} ${styles.guide}`} pathLength={1} />
+                {field.finish.glaze && t.kind === 0 && <path className={styles.glaze} />}
+                {field.finish.interlace && <path className={`${styles.line} ${styles.ink} ${styles.halo}`} pathLength={1} strokeWidth={9 * t.weight} />}
+                <path className={`${styles.line} ${styles.ink} ${styles.shadow}`} pathLength={1} strokeWidth={7.5 * t.weight} />
+                <path className={`${styles.line} ${styles.ink} ${styles.band} ${styles[t.hue]}`} pathLength={1} strokeWidth={5.5 * t.weight} />
+                <path className={`${styles.line} ${styles.ink} ${styles.channel}`} pathLength={1} strokeWidth={1.5 * t.weight} />
+                <path className={`${styles.line} ${styles.ink} ${styles.glint}`} pathLength={1} strokeWidth={0.6 * t.weight} />
               </g>
             ))}
           </svg>

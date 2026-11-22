@@ -1,40 +1,20 @@
-/* Shipping note, set apart as a callout at the top. */
+/* The shipping note, set apart at the head of the Shipping section. */
 .disclaimer {
-  display: flex;
-  gap: var(--s-4);
-  align-items: baseline;
-  margin: 0 0 var(--s-12);
+  margin: 0 auto var(--s-6);
   padding: var(--s-4) var(--s-6);
-  max-width: none;
+  max-width: 46rem;
   color: var(--haze);
-  border-left: 2px solid var(--gold);
+  border-left: 2px solid var(--indigo-lift);
   background: color-mix(in srgb, var(--ink-deep) 55%, transparent);
 }
-.disclaimer::before {
-  content: 'Shipping';
-  flex: none;
-  font-family: var(--font-ui);
-  font-size: var(--t-xs);
-  letter-spacing: var(--tracking-wide);
-  text-transform: uppercase;
-  color: var(--gold-dim);
-}
 
-/* Sections: numbered, with a clear rule across the top. */
-.section { margin: 0 0 var(--s-16); }
+/* Sections: numbered, under the shared section header (stage.module.css). */
+.section { margin: 0 0 var(--s-16); scroll-margin-top: var(--s-6); }
 .section:last-child { margin-bottom: 0; }
-.sectionHead {
-  display: flex;
-  align-items: baseline;
-  gap: var(--s-4);
-  padding-bottom: var(--s-3);
-  margin-bottom: var(--s-6);
-  border-bottom: 1px solid var(--line);
-}
+.section > h2 { margin-top: 0; }
 .num { font-family: var(--font-ui); font-size: var(--t-xs); letter-spacing: var(--tracking-wide); color: var(--gold-dim); }
-.sectionTitle { font-family: var(--font-display); font-weight: 300; font-size: var(--t-lg); color: var(--gold); margin: 0; }
 
-.list { margin: 0; max-width: 46rem; }
+.list { margin: 0 auto; max-width: 46rem; }
 
 /* Q&A pairs, separated by a faint hairline. */
 .item { padding: var(--s-6) 0; }

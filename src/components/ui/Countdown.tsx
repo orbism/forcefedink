@@ -21,7 +21,7 @@ function split(ms: number) {
 }
 
 /**
- * Counts down to a drop. Rendered client-side from a fixed target so the server never
+ * Counts down to an edition release. Rendered client-side from a fixed target so the server never
  * bakes a stale "time remaining" into the prerendered page.
  */
 export function Countdown({ target, label }: { target: string; label?: string }) {
@@ -37,7 +37,7 @@ export function Countdown({ target, label }: { target: string; label?: string })
   }, [targetMs])
 
   if (remaining !== null && remaining <= 0) {
-    return <p className={styles.live}>The drop is open.</p>
+    return <p className={styles.live}>The edition is open.</p>
   }
 
   const parts = split(remaining ?? 0)

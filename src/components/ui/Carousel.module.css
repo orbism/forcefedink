@@ -7,17 +7,69 @@
   padding: var(--s-8) clamp(3.5rem, 6vw, 5.5rem) var(--s-6);
 }
 
-.viewport { position: relative; overflow: hidden; min-height: 0; touch-action: pan-y; }
+.viewport { position: relative; overflow: hidden; min-height: 0; touch-action: pan-y; cursor: zoom-in; }
 
 .track {
   display: flex;
   height: 100%;
-  transition: translate 720ms var(--ease-ink);
+  transition: translate var(--throw-dur) var(--snap);
 }
 
 .slide { position: relative; flex: 0 0 100%; height: 100%; }
 /* The piece in full: contained, never cropped, with a soft shadow to lift it off the ground. */
 .slide img { object-fit: contain; filter: drop-shadow(0 18px 38px rgb(0 0 0 / 0.45)); }
+
+/* Loupe: a lens of the full-resolution image that follows the mouse. */
+.lens {
+  position: absolute;
+  z-index: 2;
+  width: 11rem;
+  height: 11rem;
+  translate: -50% -50%;
+  border-radius: 50%;
+  border: 1px solid var(--indigo-lift);
+  box-shadow: 0 10px 30px rgb(0 0 0 / 0.55);
+  background-color: var(--ink-deep);
+  background-repeat: no-repeat;
+  pointer-events: none;
+  opacity: 0;
+  scale: 0.9;
+  transition: opacity var(--snap-dur) var(--snap), scale var(--snap-dur) var(--snap);
+}
+.lens[data-on] { opacity: 1; scale: 1; }
+@media (hover: none) { .lens { display: none; } }
+
+/* Keyboard route to the full view; the image itself takes clicks and taps. */
+.expand { position: absolute; inset: auto auto var(--s-2) 50%; translate: -50% 0; }
+.expand:not(:focus-visible) { clip-path: inset(50%); width: 1px; height: 1px; overflow: hidden; white-space: nowrap; }
+.expand:focus-visible { padding: var(--s-1) var(--s-3); font-size: var(--t-xs); background: var(--indigo); color: var(--leaf); }
+
+/* Full view: the untouched original at its own size, scrollable; any click closes it. */
+.full {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: grid;
+  overflow: auto;
+  padding: max(var(--s-4), env(safe-area-inset-top)) max(var(--s-4), env(safe-area-inset-right)) max(var(--s-4), env(safe-area-inset-bottom)) max(var(--s-4), env(safe-area-inset-left));
+  background: color-mix(in srgb, var(--ink-deep) 95%, transparent);
+  cursor: zoom-out;
+  animation: full-in var(--snap-dur) var(--snap);
+}
+.full img { margin: auto; max-width: none; height: auto; }
+.close {
+  position: fixed;
+  top: var(--s-4);
+  right: var(--s-4);
+  padding: 0.45rem 0.9rem;
+  font-size: var(--t-xs);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--gold);
+  border: 1px solid var(--line-indigo);
+  background: color-mix(in srgb, var(--indigo-deep) 80%, transparent);
+}
+@keyframes full-in { from { opacity: 0; } }
 
 /* Arrows flank the image. */
 .arrow {
@@ -30,12 +82,12 @@
   height: 2.75rem;
   border-radius: 50%;
   color: var(--gold);
-  border: 1px solid var(--line);
-  background: color-mix(in srgb, var(--ink) 70%, transparent);
+  border: 1px solid var(--line-indigo);
+  background: color-mix(in srgb, var(--indigo-deep) 70%, transparent);
   backdrop-filter: blur(6px);
-  transition: color 200ms linear, border-color 200ms linear, scale 200ms var(--ease-ink);
+  transition: color var(--snap-dur) var(--snap), border-color var(--snap-dur) var(--snap), background-color var(--snap-dur) var(--snap), scale var(--snap-dur) var(--snap);
 }
-.arrow:hover { color: var(--gold-hot); border-color: var(--gold-hot); scale: 1.06; }
+.arrow:hover { color: var(--leaf); border-color: var(--indigo-lift); background: color-mix(in srgb, var(--indigo) 85%, transparent); scale: 1.06; }
 .prev { left: var(--s-3); }
 .next { right: var(--s-3); }
 
@@ -47,9 +99,12 @@
   border-radius: 999px;
   background: var(--gold-dim);
   opacity: 0.55;
-  transition: width 420ms var(--ease-ink), opacity 200ms linear, background 200ms linear;
+  transition: width var(--throw-dur) var(--throw), opacity var(--snap-dur) var(--snap), background-color var(--snap-dur) var(--snap);
 }
 .tab:hover { opacity: 0.9; }
+/* The dot stays small; the hit area doesn't. */
+.tab { position: relative; }
+.tab::after { content: ''; position: absolute; inset: -18px -6px; }
 .tab[aria-current='true'] { width: 1.9rem; opacity: 1; background: var(--gold-hot); }
 
 @media (max-width: 760px) {

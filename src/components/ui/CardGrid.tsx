@@ -6,18 +6,22 @@ export type CardItem = {
   href: string
   title: string
   image: string | null
+  blur?: string | null
   alt: string
   sub?: string | null
   badge?: { label: string; tone?: 'live' | 'sold' } | null
 }
 
+/** Spread a `pic()` result into a card. */
+export const card = (p: { src: string; blur: string | null } | null) => ({ image: p?.src ?? null, blur: p?.blur ?? null })
+
 export function CardGrid({ items, sizes }: { items: CardItem[]; sizes?: string }) {
   return (
     <div className={s.grid}>
       {items.map((item) => (
-        <Link key={item.href} href={item.href} className={s.link}>
+        <Link key={item.href} href={item.href} className={`${s.link} lift`} data-bleed="">
           {item.image ? (
-            <Frame src={item.image} alt={item.alt} sizes={sizes} />
+            <Frame src={item.image} alt={item.alt} blur={item.blur} sizes={sizes} />
           ) : (
             <div className={s.frame} />
           )}

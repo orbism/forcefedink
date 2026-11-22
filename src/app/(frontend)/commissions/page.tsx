@@ -23,7 +23,7 @@ export default async function CommissionsPage() {
       from="left"
       motif="essaouira"
       burst={3}
-      head={<StageHead eyebrow="Commissions" title={[open ? 'Open.' : 'Closed for now.']} />}
+      head={<StageHead title={[open ? 'Commissions are open.' : 'Commissions are closed.']} />}
     >
       <p>
         <Badge tone={open ? 'live' : 'sold'}>{open ? 'Accepting commissions' : 'Not accepting'}</Badge>

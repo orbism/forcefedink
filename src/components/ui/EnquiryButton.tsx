@@ -13,6 +13,7 @@ export function EnquiryButton({
   disabled = false,
   disabledLabel = 'Unavailable',
   ghost = false,
+  hold,
 }: {
   type: 'print' | 'original' | 'commission' | 'general'
   subject?: string
@@ -20,6 +21,8 @@ export function EnquiryButton({
   disabled?: boolean
   disabledLabel?: string
   ghost?: boolean
+  /** Milliseconds to stay on the page after the click (see PageTurn), e.g. for a seal. */
+  hold?: number
 }) {
   if (disabled) {
     return (
@@ -34,6 +37,7 @@ export function EnquiryButton({
     <Link
       href={`/contact?${query.toString()}`}
       className={`${styles.btn} ${ghost ? styles.ghost : ''}`}
+      data-hold={hold}
     >
       {label}
     </Link>

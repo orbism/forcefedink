@@ -1,6 +1,11 @@
+import type { Where } from 'payload'
 import { cache } from 'react'
 
 import { getPayloadClient } from './payload'
+import { toEdition, toOriginal } from './shop'
+
+/** Products are drafted in the admin; the site only ever shows published ones. */
+const PUBLISHED: Where = { _status: { equals: 'published' } }
 
 /** Deduped per-request so the shell and the page don't fetch settings twice. */
 export const getSiteSettings = cache(async () => {
@@ -13,28 +18,23 @@ export const getCommissions = cache(async () => {
   return payload.findGlobal({ slug: 'commissions', depth: 0 })
 })
 
-/** Drops the public should see, newest first. Upcoming and live before archived. */
-export const getDrops = cache(async () => {
+/** Published editions, with their size options populated. */
+const editions = async (where: Where[], sort?: string, limit = 100) => {
   const payload = await getPayloadClient()
   const { docs } = await payload.find({
-    collection: 'drops',
+    collection: 'products',
+    where: { and: [PUBLISHED, { kind: { equals: 'edition' } }, ...where] },
+    sort,
     depth: 2,
-    limit: 100,
-    sort: '-released',
+    limit,
   })
-  return docs
-})
+  return docs.map(toEdition)
+}
 
-export const getDrop = cache(async (slug: string) => {
-  const payload = await getPayloadClient()
-  const { docs } = await payload.find({
-    collection: 'drops',
-    where: { slug: { equals: slug } },
-    depth: 2,
-    limit: 1,
-  })
-  return docs[0] ?? null
-})
+/** Every published edition, newest release first. */
+export const getEditions = cache(() => editions([], '-edition.release'))
+
+export const getEdition = cache(async (slug: string) => (await editions([{ slug: { equals: slug } }], undefined, 1))[0] ?? null)
 
 export const getSeriesList = cache(async () => {
   const payload = await getPayloadClient()
@@ -76,16 +76,29 @@ export const getArtwork = cache(async (slug: string) => {
   return docs[0] ?? null
 })
 
-/** The original for an artwork, if one is listed. */
+/** The original for an artwork, if one is listed for sale. */
 export const getOriginalFor = cache(async (artworkId: number | string) => {
   const payload = await getPayloadClient()
   const { docs } = await payload.find({
-    collection: 'originals',
-    where: { artwork: { equals: artworkId } },
-    depth: 1,
+    collection: 'products',
+    where: { and: [PUBLISHED, { kind: { equals: 'original' } }, { artwork: { equals: artworkId } }] },
+    depth: 0,
     limit: 1,
   })
-  return docs[0] ?? null
+  return docs[0] ? toOriginal(docs[0]) : null
+})
+
+/** Every published original, with its artwork for the image and link. */
+export const getOriginals = cache(async () => {
+  const payload = await getPayloadClient()
+  const { docs } = await payload.find({
+    collection: 'products',
+    where: { and: [PUBLISHED, { kind: { equals: 'original' } }] },
+    sort: '-createdAt',
+    depth: 2,
+    limit: 200,
+  })
+  return docs.map(toOriginal)
 })
 
 export const getFaqs = cache(async () => {
@@ -94,28 +107,11 @@ export const getFaqs = cache(async () => {
   return docs
 })
 
-/** The next drop worth counting down to: soonest upcoming release. */
-export const getNextDrop = cache(async () => {
-  const payload = await getPayloadClient()
-  const { docs } = await payload.find({
-    collection: 'drops',
-    where: { status: { equals: 'upcoming' }, released: { exists: true } },
-    sort: 'released',
-    depth: 2,
-    limit: 1,
-  })
-  return docs[0] ?? null
-})
+/** The next edition worth counting down to: soonest upcoming release. */
+export const getNextEdition = cache(
+  async () =>
+    (await editions([{ 'edition.status': { equals: 'upcoming' } }, { 'edition.release': { exists: true } }], 'edition.release', 1))[0] ?? null,
+)
 
 /** Closed runs, newest first — the track record under the countdown. */
-export const getPastDrops = cache(async (limit = 6) => {
-  const payload = await getPayloadClient()
-  const { docs } = await payload.find({
-    collection: 'drops',
-    where: { status: { in: ['soldout', 'archived'] } },
-    sort: '-released',
-    depth: 2,
-    limit,
-  })
-  return docs
-})
+export const getPastEditions = cache((limit = 6) => editions([{ 'edition.status': { in: ['soldout', 'archived'] } }], '-edition.release', limit))

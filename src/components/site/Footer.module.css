@@ -1,4 +1,4 @@
-/* Thin fixed strip: player hard left, contact affordances hard right. */
+/* Thin fixed strip: sign-up (and player) hard left, links and contact hard right. */
 .footer {
   position: fixed;
   inset: auto 0 0;
@@ -14,13 +14,25 @@
   border-top: 1px solid var(--line-soft);
 }
 
+.left { display: flex; align-items: center; gap: var(--s-4); min-width: 0; }
 .right { display: flex; align-items: center; gap: var(--s-4); }
 
 .icon {
   display: grid;
   place-items: center;
-  width: 1.9rem;
-  height: 1.9rem;
+  width: 2.75rem;
+  height: 2.75rem;
   color: var(--gold-dim);
 }
 .icon:hover { color: var(--gold-hot); }
+
+.text {
+  display: grid;
+  place-items: center;
+  min-height: 2.75rem;
+  font-size: var(--t-xs);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--gold-dim);
+}
+.text:hover { color: var(--gold-hot); }

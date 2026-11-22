@@ -5,27 +5,33 @@
 :root {
   color-scheme: dark;
 
-  /* --- ink & gold ------------------------------------------------------- */
-  --ink: #1b1a1e;        /* page ground — dark grey, not black */
-  --canvas: #26242b;     /* the panel that rises in: lighter than the ground */
-  --canvas-edge: #302e37; /* its top lip, so it reads as a sheet with thickness */
-  --ink-deep: #141317;   /* wells, image mattes — the only near-black left */
-  --indigo: #26242b;     /* legacy alias for .surface; same sheet as --canvas */
-  --gold: #ddd7a2;       /* wordmark, nav, primary text */
-  --gold-dim: #cbc695;   /* secondary text, meta */
-  --gold-hot: #f5e7a8;   /* hover, active linework */
-  --paper: #fdfdfd;      /* ink white — hairlines, the hamburger */
-  --haze: #eeeff7;       /* light purplish-blue white */
+  /* --- ink & gold (round two: gold ramp, indigo accents) ------------------ */
+  /* Black and gold carry the site. Indigo — the artist's dyed paper — is a quiet accent on
+     things you can act on (buttons, controls, focus) and the odd border, never a ground. */
+  --ink: #16151a;        /* page ground */
+  --canvas: #221f27;     /* the sheet that rises in */
+  --ink-deep: #121115;   /* wells, image mattes */
+  --bronze: #7a5a22;     /* the dark end of the ramp: ink shadow, meter wells */
+  --brass: #b08a3a;      /* secondary text, meta */
+  --gold: #d9bd72;       /* primary text, wordmark, nav */
+  --leaf: #f2dc94;       /* titles, hover, active */
+  --paper: #f4efe2;      /* body copy on the sheet, hairlines */
+  --gold-dim: var(--brass);
+  --gold-hot: var(--leaf);
+  --haze: var(--paper);
+
+  --indigo: #1c2b5e;
+  --indigo-deep: #101a3e;
+  --indigo-lift: #2c4189; /* hover / focus: indigo that still reads on black */
 
   --line: color-mix(in srgb, var(--gold) 22%, transparent);
   --line-soft: color-mix(in srgb, var(--gold) 12%, transparent);
+  --line-indigo: color-mix(in srgb, var(--indigo-lift) 70%, transparent);
   --sold: #8b8272;       /* struck-through / unavailable */
 
   /* --- type ------------------------------------------------------------- */
-  --font-display: var(--font-cormorant), 'Cormorant Garamond', Garamond, serif;
-  --font-ui: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
-
-  --t-hero: clamp(2.5rem, 7vw, 5.5rem);
+  --font-display: var(--font-cormorant), 'Cormorant', Garamond, 'Times New Roman', serif;
+  --font-ui: var(--font-marcellus), 'Marcellus', Georgia, serif;
   --t-xl: clamp(2.15rem, 4.8vw, 3.55rem);
   --t-lg: clamp(1.5rem, 3vw, 2.125rem);
   --t-md: clamp(1.125rem, 2vw, 1.5rem);
@@ -43,9 +49,9 @@
   --s-4: 1rem;
   --s-6: 1.5rem;
   --s-8: 2rem;
+  --s-10: 2.5rem;
   --s-12: 3rem;
   --s-16: 4rem;
-  --s-24: 6rem;
   --gutter: clamp(1.25rem, 5vw, 5rem);
   --measure: 62ch;
 
@@ -53,19 +59,27 @@
   --tex-paper: url('/textures/paper-grain-256.png');
   --tex-canvas: url('/textures/canvas-weave-256.png');
 
-  /* --- motion ----------------------------------------------------------- */
-  --dur-draw: 700ms;       /* linework draws in */
-  --dur-brush-in: 500ms;
-  --dur-brush-out: 400ms;
-  --dur-undraw: 350ms;     /* on scroll-out and on navigate */
-  --dur-text: 600ms;
-  --hold-min: 3000ms;      /* brushed motifs hold 3–5s before swapping */
-  --hold-max: 5000ms;
-  --ease-ink: cubic-bezier(0.22, 1, 0.36, 1);
-  --ease-out: cubic-bezier(0.33, 0, 0.16, 1);
+  /* --- motion: four named curves, used everywhere -------------------------- */
+  /* Snap: buttons, hovers, small state changes. */
+  --snap: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --snap-dur: 180ms;
+  /* Throw: sheets and panels arriving. A damped spring (ζ 0.58, ω 11) sampled for linear(). */
+  --throw: cubic-bezier(0.18, 1.12, 0.32, 1);
+  --throw-dur: 640ms;
+  /* Leave: anything exiting (the outgoing sheet fades on this curve). */
+  --leave: cubic-bezier(0.55, 0, 0.9, 0.4);
+  /* Seep: ink spreading, slow reveals. */
+  --seep: cubic-bezier(0.05, 0.7, 0.2, 1);
+  --seep-dur: 2400ms;
 
   --header-h: 5.25rem;
   --footer-h: 2.75rem;
+}
+
+@supports (transition-timing-function: linear(0, 1)) {
+  :root {
+    --throw: linear(0, 0.024, 0.0872, 0.1775, 0.2846, 0.3994, 0.5151, 0.626, 0.7282, 0.819, 0.897, 0.9614, 1.0126, 1.0513, 1.0786, 1.0959, 1.1047, 1.1067, 1.1033, 1.096, 1.086, 1.0743, 1.062, 1.0497, 1.038, 1.0273, 1.0178, 1.0097, 1.0031, 0.9979, 0.9939, 0.9912, 0.9895, 0.9887, 0.9886, 0.9891, 0.9899, 0.991, 0.9923, 0.9936, 0.9949, 0.9961, 0.9973, 0.9983, 0.9991, 0.9998, 1.0003, 1.0007, 1);
+  }
 }
 
 @media (max-width: 899px) {

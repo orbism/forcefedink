@@ -3,14 +3,17 @@ import type { CollectionAfterChangeHook, CollectionAfterDeleteHook, GlobalAfterC
 
 /**
  * Pages are prerendered, so an edit in the admin would otherwise not surface until the
- * next deploy — unacceptable when `editionsSold` is what tells a buyer whether a drop is
+ * next deploy — unacceptable when `editionsSold` is what tells a buyer whether an edition is
  * still open. These push the affected paths on save instead.
  */
-const bust = (paths: (string | null | undefined)[]) => {
+export const bust = (paths: (string | null | undefined)[]) => {
   for (const path of paths) {
     if (!path) continue
     try {
-      revalidatePath(path)
+      // A route pattern refreshes every page it matches; it names the route file, so it
+      // includes the route group: "/(frontend)/editions/[slug]".
+      if (path.includes('[')) revalidatePath(path, 'page')
+      else revalidatePath(path)
     } catch {
       // Outside a Next request context — a seed or migration script, for instance —
       // revalidatePath throws "static generation store missing". There is no cache to

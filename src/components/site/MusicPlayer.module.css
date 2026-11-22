@@ -23,7 +23,7 @@
   opacity: 0;
   overflow: hidden;
   white-space: nowrap;
-  transition: max-width 420ms var(--ease-ink), opacity 260ms linear;
+  transition: max-width var(--throw-dur) var(--snap), opacity var(--snap-dur) var(--snap);
 }
 .player[data-open='true'] .tray { max-width: 22rem; opacity: 1; }
 

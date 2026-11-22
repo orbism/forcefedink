@@ -1,8 +1,10 @@
 export const NAV = [
-  { href: '/about', label: 'About' },
-  { href: '/drops', label: 'Print Drops' },
+  { href: '/editions', label: 'Editions' },
+  { href: '/originals', label: 'Originals' },
   { href: '/archive', label: 'Archive' },
   { href: '/commissions', label: 'Commissions' },
-  { href: '/faq', label: 'FAQ' },
-  { href: '/contact', label: 'Contact' },
+  { href: '/about', label: 'About' },
 ] as const
+
+/** Set apart from the nav as a button. */
+export const CONTACT = { href: '/contact', label: 'Contact' } as const

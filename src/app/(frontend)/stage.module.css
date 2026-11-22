@@ -1,14 +1,79 @@
 /* Shared canvas-content styles for stage pages. */
+/*
+ * Section headers: set apart from the content under them — spaced capitals in the display
+ * face between gilt rules. Centred in bottom sheets, ranged left with a trailing rule in
+ * side panels.
+ */
 .groupTitle {
+  display: flex;
+  align-items: center;
+  gap: var(--s-4);
   font-family: var(--font-display);
-  font-size: var(--t-md);
-  color: var(--gold);
-  margin: var(--s-10) 0 var(--s-4);
+  font-size: clamp(1rem, 1.3vw, 1.125rem);
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--leaf);
+  margin: var(--s-16) 0 var(--s-8);
 }
-.groupTitle:first-child { margin-top: 0; }
+.groupTitle::before,
+.groupTitle::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold) 70%, var(--indigo-lift));
+}
+.groupTitle::after { background: linear-gradient(270deg, transparent, var(--gold) 70%, var(--indigo-lift)); }
+:global([data-from='left']) .groupTitle::before,
+:global([data-from='right']) .groupTitle::before { display: none; }
+@media (max-width: 899px) {
+  :global([data-from]) .groupTitle::before { display: block; }
+}
+
+/* Grid pages: the view toggle sits on its own line above the first section. */
+.toolbar { display: flex; justify-content: center; margin-bottom: var(--s-8); }
+:global([data-from='left']) .toolbar,
+:global([data-from='right']) .toolbar { justify-content: flex-end; }
+/* Only the sheet's opening heading sits flush; later groups keep their space. */
+section:first-of-type > .groupTitle:first-child { margin-top: 0; }
 .lede { color: var(--haze); max-width: var(--measure); }
+/* A sub-section inside a detail page: same header, less air above. */
+.tight { margin: var(--s-10) 0 var(--s-4); }
+
+/* Opening line of a detail page, set in the display face. */
+.lead { font-family: var(--font-display); font-size: var(--t-md); line-height: 1.45; color: var(--haze); white-space: pre-line; margin: var(--s-4) 0 0; }
+
+/* Spec sheet: label over value in ruled cells. Cells are shifted 1px up/left and the box
+   clips, so only the rules between cells show, however many fit per row. */
+.specs {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
+  margin: var(--s-6) 0 0;
+  border-block: 1px solid var(--line);
+  overflow: hidden;
+}
+.specs > div {
+  display: grid;
+  gap: var(--s-1);
+  align-content: start;
+  padding: var(--s-3) var(--s-4);
+  margin: -1px 0 0 -1px;
+  border-top: 1px solid var(--line-soft);
+  border-left: 1px solid var(--line-soft);
+}
+.specs dd { margin: 0; color: var(--haze); }
+
+/* Small print (shipping, terms): italic, hung off a gilt rule. */
+.note {
+  margin: var(--s-6) 0 0;
+  padding-left: var(--s-4);
+  border-left: 1px solid var(--gold);
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: var(--t-body);
+  color: var(--gold);
+}
 .empty { color: var(--gold-dim); }
 
 /* Contact: the spill pours in from the top-left corner, under the title. */
 .spill { left: -5vw; top: -8dvh; width: min(56vw, 820px); }
-@media (max-width: 760px) { .spill { left: -20vw; top: -6dvh; width: 110vw; } }
+@media (max-width: 899px) { .spill { left: -20vw; top: -6dvh; width: min(110vw, 560px); } }

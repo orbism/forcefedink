@@ -1,90 +1,93 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useRef } from 'react'
 
-import { splat } from './splat'
+import { prefersReducedMotion } from '@/motion/useInkReveal'
+
+import { renderInk } from './render'
 import styles from './ink.module.css'
 
-type Props = {
-  /** Omit for a fresh throw on every load. */
-  seed?: number
-  /** Size of the throw; 1 is a small accent. */
-  scale?: number
-  /** Bronze sits under type; gold stands alone. */
-  tone?: 'gold' | 'bronze'
-  delayMs?: number
-  /** Throw direction in radians (0 = right). Omit for any direction. */
-  aim?: number
-  /** Place the element so its impact point, not its box corner, sits at left/top. */
-  anchored?: boolean
-  className?: string
-}
+/** Pixel density for the bitmap: soft ink gains nothing past this, and it keeps the render fast. */
+const MAX_DPR = 1.5
+/** The wet mark spreads out from the impact over this long. */
+const HIT_MS = 420
+/** How long it stays wet before it starts to dry. */
+const WET_MS = 900
 
 /**
- * A splash of ink that hits on mount, then bleeds and dries like watercolor.
- *
- * Client-only: the seed is picked on mount so every load throws differently, and the
- * geometry leans on pow/exp/log whose last bits differ between server and browser V8.
+ * When the title beside this began animating, on the document timeline. Server-rendered
+ * titles start at first paint, well before hydration, so timing from mount would land late.
  */
-export function InkSplat({ seed, scale = 1, tone = 'gold', delayMs = 0, aim, anchored = false, className }: Props) {
-  const [actual, setActual] = useState<number | null>(null)
-  const [hit, setHit] = useState(false)
-  const s = useMemo(() => (actual === null ? null : splat(actual, 640, 360, scale, aim)), [actual, scale, aim])
+function titleOrigin(el: HTMLElement) {
+  const starts = (el.parentElement?.getAnimations({ subtree: true }) ?? [])
+    .map((a) => a.startTime)
+    .filter((t): t is number => typeof t === 'number')
+  return starts.length ? Math.min(...starts) : null
+}
+
+const canvas = (W: number, H: number, className: string) => Object.assign(document.createElement('canvas'), { width: W, height: H, className })
+
+/**
+ * A throw of gold-leaf ink beside a title: it lands wet and glossy, spreading from the
+ * impact, then dries matte with a pigment ring. Rendered once to a bitmap (fresh on every
+ * load); afterwards only opacity moves. The element is placed by its impact point.
+ */
+export function InkSplat({ delayMs = 0, seed, className }: { delayMs?: number; seed?: number; className?: string }) {
+  const ref = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    setActual(seed ?? Math.floor(Math.random() * 1e6))
-    const t = window.setTimeout(() => setHit(true), delayMs)
-    return () => window.clearTimeout(t)
-  }, [seed, delayMs])
+    const el = ref.current
+    if (!el) return
+    let alive = true
+    let raf = 0
+    const timers: number[] = []
+    const scale = Math.min(MAX_DPR, window.devicePixelRatio || 1)
+    const W = Math.round(el.clientWidth * scale)
+    const H = Math.round(el.clientHeight * scale)
+    if (!W || !H) return
+    const r = Math.random
+    const origin = titleOrigin(el) ?? performance.now()
 
-  if (!s) return null
-  const fill = `url(#ink-${tone})`
-  const box = `0 0 ${s.width} ${s.height}`
-  const vars = {
-    '--ox': `${(s.cx / s.width) * 100}%`,
-    '--oy': `${(s.cy / s.height) * 100}%`,
-    '--cx': `${s.cx.toFixed(1)}px`,
-    '--cy': `${s.cy.toFixed(1)}px`,
-    ...(anchored ? { translate: `${(-(s.cx / s.width) * 100).toFixed(2)}% ${(-(s.cy / s.height) * 100).toFixed(2)}%` } : {}),
-  } as React.CSSProperties
+    renderInk({ W, H, seed: seed ?? Math.floor(r() * 1e9), dir: (r() - 0.5) * 0.5, impact: 38, force: 0.62 }).then((res) => {
+      if (!alive) return
+      el.style.translate = `${(-(res.cx / W) * 100).toFixed(2)}% ${(-(res.cy / H) * 100).toFixed(2)}%`
+      const dry = canvas(W, H, styles.dry)
+      const wet = canvas(W, H, styles.wet)
+      dry.getContext('2d')!.putImageData(res.dry, 0, 0)
+      el.append(dry, wet)
 
-  return (
-    <div className={[styles.root, styles.splat, className].filter(Boolean).join(' ')} style={vars} data-hit={hit || undefined} aria-hidden="true">
-      <svg className={styles.bloom} viewBox={box}>
-        <g filter="url(#ink-bloom)" fill={fill}>
-          {s.cores.map((d, i) => <path key={i} d={d} />)}
-        </g>
-      </svg>
-      <svg className={styles.crisp} viewBox={box}>
-        <g filter="url(#ink-crisp)" fill={fill}>
-          {s.cores.map((d, i) => <path key={i} className={styles.core} d={d} />)}
-          {s.streaks.map((st, i) => (
-            <path
-              key={i}
-              className={styles.streak}
-              d={st.d}
-              style={{ '--sx': `${st.sx.toFixed(1)}px`, '--sy': `${st.sy.toFixed(1)}px`, '--at': `${st.at}ms` } as React.CSSProperties}
-            />
-          ))}
-          {s.specks.map((p, i) => (
-            <circle
-              key={i}
-              className={styles.speck}
-              cx={p.x}
-              cy={p.y}
-              r={p.r}
-              style={
-                {
-                  '--dx': `${((s.cx - p.x) * 0.7).toFixed(1)}px`,
-                  '--dy': `${((s.cy - p.y) * 0.7).toFixed(1)}px`,
-                  '--at': `${Math.round(p.reach * 120)}ms`,
-                  '--fly': `${Math.round(280 + p.reach * 240)}ms`,
-                } as React.CSSProperties
-              }
-            />
-          ))}
-        </g>
-      </svg>
-    </div>
-  )
+      const hit = () => {
+        if (prefersReducedMotion()) return void el.setAttribute('data-dry', '')
+        const off = canvas(W, H, '')
+        off.getContext('2d')!.putImageData(res.wet, 0, 0)
+        const ctx = wet.getContext('2d')!
+        const reach = Math.hypot(W, H)
+        const t0 = performance.now()
+        el.setAttribute('data-hit', '')
+        const frame = (now: number) => {
+          const t = Math.min(1, (now - t0) / HIT_MS)
+          ctx.clearRect(0, 0, W, H)
+          ctx.save()
+          ctx.beginPath()
+          ctx.arc(res.cx, res.cy, Math.max(1, reach * (1 - (1 - t) ** 4)), 0, Math.PI * 2)
+          ctx.clip()
+          ctx.drawImage(off, 0, 0)
+          ctx.restore()
+          if (t < 1) raf = requestAnimationFrame(frame)
+          else timers.push(window.setTimeout(() => el.setAttribute('data-dry', ''), WET_MS))
+        }
+        raf = requestAnimationFrame(frame)
+      }
+      timers.push(window.setTimeout(hit, prefersReducedMotion() ? 0 : Math.max(0, origin + delayMs - performance.now())))
+    })
+
+    return () => {
+      alive = false
+      cancelAnimationFrame(raf)
+      timers.forEach(clearTimeout)
+      el.replaceChildren()
+    }
+  }, [delayMs, seed])
+
+  return <div ref={ref} className={[styles.root, styles.splat, className].filter(Boolean).join(' ')} aria-hidden="true" />
 }

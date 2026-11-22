@@ -1,10 +1,107 @@
 # Force Fed Ink — scratchpad
 
-Running state. Plan lives at `~/.claude/plans/rules-1-be-short-magical-stroustrup.md`.
+Running state. **New session? Read `docs/COMPREHENSION.md` first** — it is the verified map of
+the code; this file is the history. (The old plan file under `~/.claude/plans/` is gone.)
 
 ## Current step
 
-**Design language v4** — ink pass: watercolor splatter, Contact spill, Maghrebi strapwork, exit choreography.
+**UI/UX upgrade** — design round 2 built 2026-11-21 (see session log). The v4/v5 design-language
+notes below are history; COMPREHENSION.md has the current system. Skills installed for it: `frontend-design`,
+`web-design-guidelines`.
+
+### Session log
+
+- 2026-11-20 — Re-acquainted from a cold start. All 8 top-level routes 200 on :3100. Wrote
+  COMPREHENSION.md. Found, not fixed: `--s-10` undefined (stage.module.css), 11 unused tokens,
+  `src/brush/strokes.ts` dead, 4 unused presets. Build-order table and step-3 component names
+  below are stale (LineDraw/PenDraw/BrushCycle/TextDrop/SectionInk/InkLink no longer exist;
+  motion is PageStage/DrawGeometry/TypeIn/NavExit).
+
+- 2026-11-21 — Cleanup (uncommitted): `--s-10` defined (group titles now get their 2.5rem top
+  margin); 12 unused tokens, 4 unused global classes, `Direction` type, 5 unused presets and
+  the `weave` pass removed; PageStage default motif fez → rabat (only seeds the deckle on
+  detail pages). ESLint config moved to eslint-config-next's native flat configs (the
+  FlatCompat import was unresolvable, lint never ran). tsc clean, 7 routes 200. Vercel CLI
+  → 66.6.0. Installed `playwright` + `chrome-devtools-mcp` plugins. Correction to the
+  11-20 entry: `src/brush/strokes.ts` is not dead — `scripts/seed.ts` uses it.
+
+- 2026-11-21 — Design round 01 board published (private artifact):
+  https://claude.ai/artifact/Ta9GeXM1pk6gTM8DisefnC — live demos for ink engine (new canvas
+  physics + per-pixel meniscus shading, prototype JS lives in the board), strapwork, title
+  entrance, type, palette, motion tokens, transitions, image loading, speed work, editions.
+  Owner's verdicts/picks/notes land in its db: `ArtifactData list` collection `feedback`, one
+  doc per section (`ink`, `linework`, `title`, `type`, `palette`, `motion`, `transitions`,
+  `loading`, `speed`, `editions`, `order`). Read those before building anything.
+  Note: the server already on :3100 was `pnpm start` of a **Sep 26 production build**, not
+  dev — it shows stale layouts (e.g. drop detail without the carousel). Use a fresh dev server
+  for screenshots of current code.
+
+- 2026-11-21 — Round-1 picks (board db, no written notes yet): ink Leaf · strapwork B Engraved ·
+  title C Trace · type B Bodoni Moda + Instrument Sans · palette C ramp + lapis · motion B four
+  tokens · transitions A keep exit-then-enter · loading C blur-up · speed: all five · editions A
+  ink meter. Owner wants more review time before building them.
+- 2026-11-21 — Responsive pass (uncommitted): one 900px breakpoint (side splits become bottom
+  sheets below it, was 760), narrow head up to 80vw at full title size (side-split 34vw squeeze
+  removed on phones), splash placed beside titles on narrow, detail pages `data-showcase` sheet
+  44dvh on narrow, header links nowrap + smaller home nav 900–1199, 44px hit areas on footer
+  icons and carousel dots, contact spill capped at 560px on narrow. Audited 10 routes at
+  375/768/1024/1440: no overflow-x, no nav wrap.
+
+- 2026-11-21 — Voice: high-end art brand, short and professional, not pompous; not the artist's
+  casual IG tone. Round 2 added to the board (same URL, "Round 2" tab): indigo-and-leaf
+  direction, ground, gold, construction-first pen, artwork hero, loupe/full view, edition card
+  with sizes, voice rewrite table, naming (Drops → Editions) + nav. Feedback keys `r2-*`.
+- 2026-11-21 — Shop switched to Payload ecommerce plugin (uncommitted): one Products list,
+  migration `20261121_083350_shop` (additive, 20 tables; verified on a throwaway DB), local DB
+  backed up to `backups/forcefedink-20261121-033200.sql` first, `pnpm shop:copy` verified 6
+  editions + 3 originals (re-run = 0 created), two-size edition round-trip checked then
+  deleted. Pages render identical content from products. `pnpm build` NOT run: the owner's
+  `pnpm start` on :3100 serves `.next`, and a build would overwrite it.
+  Open: remove retired drops/originals collections after owner confirms (that migration drops
+  tables); payment adapter last.
+
+- 2026-11-21 — **Round 2 built** (uncommitted). Picks (board db): ground A accents + note
+  (indigo only on buttons/actions/some borders, black + gold lead), gold A ramp, construction
+  B first, hero A pattern (kept), zoom B loupe + C full view, edition tweak (calligraphic bars
+  not circles), naming Editions + new nav; round-1 locked picks applied (type, palette, motion
+  tokens, trace titles, Leaf ink, blur-up, all five speed items). Built: tokens/fonts, engraved
+  strapwork + construction guides (ink-line filter gone), TraceTitle, canvas ink engine in a
+  worker, InkMeter + EditionCard, /editions (+ redirects) and /originals, nav + Contact button +
+  footer Information, voice rewrite in code, BlurImage + `media.blurDataURL` (migration
+  `20261121_171822_media_blur`, additive; verified on a throwaway DB) + `pnpm media:blur`
+  (local: 18/18 backfilled; DB backed up first to `backups/…-pre-round2.sql`), prefetch on
+  hover/touch, exit 200ms, contact form streams behind the stage (Suspense). Verified on
+  :3101 at 1440 + 390: routes 200, `/drops` 308, trace overlay within 1px of the text, no
+  console errors, exit + reduced motion OK. Not done: `pnpm build` (owner's :3100 serves
+  `.next`). CMS copy still says "drop" (site settings intro + shipping note, product titles,
+  some FAQ questions) — owner to edit or OK me to.
+
+- 2026-11-21 — Layout: bottom sheets now measured to fit under the head (40–80% cap), side
+  panels min(60vw, 54rem), short-screen (landscape phone) header/title rules, group headings
+  spaced. Sweep at 8 sizes × 11 routes: no overflow, no clipped heads. Board Round 3 ("feel":
+  scroll + click effects) published; feedback keys `r3-tap`, `r3-gilt`, `r3-press`,
+  `r3-reveal`, `r3-draw`, `r3-stretch`, `r3-wipe`, `r3-cursor`, `r3-magnet`, `r3-order`.
+
+### Brand inputs (Instagram @forcefedink, read 2026-11-21)
+
+- Materials: steel dip + ruling pens, dividers, beam compass; **A4 indigo-dyed Arches paper**
+  and black sheets scored with a steel point; bright saturated yellow-gold ink, white/silver
+  construction lines, black foil on merch.
+- Signature: construction scaffolding left visible (faint compass circles/rules) under the
+  bold inked pattern. Bodies of work: Islamic tilings (8/12/24-fold, "Amorphous" pentagon/hex),
+  Ammonite golden spiral (the logo), polyhedra (Cromwell/Coxeter), Mandelbrot, star-polygon
+  line pieces on black, older mixed media (pink/red), lots of process reels + the cat.
+- Voice: plain, wry, process-first ("real clown car of shapes", "Also, my cat.").
+- Selling today by DM: prints in multiple sizes (8×8, 12×12), back-catalog 2015 editions,
+  seasonal % off + free worldwide shipping, stickers + stamped cards in every order.
+- Domain shown in highlights: forcefed.ink.
+
+### Next up
+
+- Not done, needs owner's call: dep bumps (Payload 3.94 / Next 16.4 / React 19.3), the 8 lint
+  errors in motion code, installing `bun` for the Vercel plugin.
+
+- Agree upgrade scope with owner, then audit visually at 390/768/1280/1920 before editing.
 
 ## Build order
 

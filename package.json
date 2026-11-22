@@ -16,6 +16,8 @@
     "migrate": "node --no-deprecation --env-file-if-exists=.env node_modules/payload/bin.js migrate",
     "migrate:create": "node --no-deprecation --env-file-if-exists=.env node_modules/payload/bin.js migrate:create",
     "seed": "node --no-deprecation --env-file-if-exists=.env --import=tsx/esm scripts/seed.ts",
+    "shop:copy": "node --no-deprecation --env-file-if-exists=.env --import=tsx/esm scripts/shop-copy.ts",
+    "media:blur": "node --no-deprecation --env-file-if-exists=.env --import=tsx/esm scripts/media-blur.ts",
     "motif": "node scripts/ingest-motif.mjs",
     "texture": "node scripts/gen-texture.mjs",
     "ci": "pnpm run migrate && pnpm run build"
@@ -24,6 +26,7 @@
     "@payloadcms/db-postgres": "3.88.0",
     "@payloadcms/email-resend": "3.88.0",
     "@payloadcms/next": "3.88.0",
+    "@payloadcms/plugin-ecommerce": "3.88.0",
     "@payloadcms/plugin-seo": "3.88.0",
     "@payloadcms/richtext-lexical": "3.88.0",
     "@payloadcms/storage-vercel-blob": "3.88.0",

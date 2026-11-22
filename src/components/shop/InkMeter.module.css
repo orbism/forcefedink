@@ -1,0 +1,43 @@
+/* A qalam stroke: the nib's diagonal cut across the head, tapering to a point. */
+.meter {
+  --bar: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 48'%3E%3Cpath d='M3.6 1 10.6 3.6 8.3 39.6Q7.7 46 5.1 47.2 4.3 44 4.6 39.8Z'/%3E%3C/svg%3E");
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.2rem;
+  max-width: 26rem;
+}
+
+.meter i {
+  position: relative;
+  width: 0.62rem;
+  height: 2.4rem;
+  rotate: var(--lean);
+  scale: 1 var(--h);
+  transform-origin: 50% 100%;
+}
+.meter i::before,
+.meter i::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  mask: var(--bar) center / contain no-repeat;
+  -webkit-mask: var(--bar) center / contain no-repeat;
+}
+/* Waiting: a faint stroke. */
+.meter i::before { background: var(--line); }
+/* Inked: the gold ramp, filled from the foot as the meter comes in. */
+.meter i::after {
+  background: linear-gradient(170deg, var(--leaf) 0%, var(--gold) 38%, var(--brass) 72%, var(--bronze) 100%);
+  clip-path: inset(100% 0 0 0);
+}
+.meter i[data-state='sold']::after {
+  animation: fill 520ms var(--snap) both;
+  animation-delay: calc(var(--i) * 28ms + 200ms);
+}
+.meter i[data-state='next']::before { background: var(--indigo-lift); }
+
+@keyframes fill { to { clip-path: inset(0 0 0 0); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .meter i[data-state='sold']::after { animation: none; clip-path: none; }
+}

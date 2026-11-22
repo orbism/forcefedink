@@ -32,7 +32,7 @@ body::before {
 
 h1, h2, h3, h4 {
   font-family: var(--font-display);
-  font-weight: 300;
+  font-weight: 400;
   line-height: 1.1;
   margin: 0;
   letter-spacing: 0.01em;
@@ -45,33 +45,13 @@ a:hover { color: var(--gold-hot); }
 
 img, svg { display: block; max-width: 100%; }
 
-button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
+button { font: inherit; color: inherit; background: none; border: 0; }
 
 ::selection { background: var(--gold); color: var(--ink); }
 
 :focus-visible {
   outline: 1px solid var(--gold-hot);
   outline-offset: 3px;
-}
-
-/* --- reusable surfaces ---------------------------------------------------- */
-
-/* Any panel that carries text. Canvas weave under, hairline around. */
-.surface {
-  position: relative;
-  background-color: var(--indigo);
-  isolation: isolate;
-}
-.surface::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  background-image: var(--tex-canvas);
-  background-size: 256px 256px;
-  opacity: 0.18;
-  mix-blend-mode: overlay;
-  pointer-events: none;
 }
 
 /* Small caps UI label — nav, meta, prices, buttons. */
@@ -83,15 +63,6 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   color: var(--gold-dim);
 }
 
-.rule { height: 1px; background: var(--line-soft); border: 0; margin: 0; }
-
-.wrap {
-  width: 100%;
-  max-width: 82rem;
-  margin-inline: auto;
-  padding-inline: var(--gutter);
-}
-
 .sr-only {
   position: absolute;
   width: 1px; height: 1px;
@@ -100,11 +71,6 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   clip-path: inset(50%);
   white-space: nowrap;
 }
-
-/* Do NOT put this on anything containing a scroll-revealed motif: a skipped
-   content-visibility subtree reports its descendants as not intersecting, so the
-   IntersectionObserver never fires and the ink never draws. Safe for static blocks only. */
-.defer { content-visibility: auto; contain-intrinsic-size: auto 60vh; }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
@@ -115,3 +81,62 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   }
 }
 
+
+/* Gilt light (motion/Gilt.tsx): a catch-light that follows the mouse; artwork tilts. */
+[data-gilt]::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  opacity: var(--o, 0);
+  transition: opacity 260ms ease-out;
+  mix-blend-mode: screen;
+  background:
+    radial-gradient(220px circle at var(--mx, 50%) var(--my, 50%), rgb(255 238 196 / 0.26), rgb(217 189 114 / 0.08) 40%, transparent 65%),
+    linear-gradient(115deg, transparent 30%, rgb(255 246 210 / 0.09) calc(var(--mx, 50%) - 10%), transparent calc(var(--mx, 50%) + 20%));
+}
+[data-gilt='tilt'] {
+  transform: perspective(900px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+  transition: transform var(--throw-dur) var(--throw);
+}
+[data-gilt='tilt'][data-gilt-live] { transition: transform 120ms linear; }
+
+/* Scroll reveal (PageStage useReveal). Sheet blocks smear in: a fade, a slide, and a brief
+   horizontal stretch and blur that settles, like wet ink dragged into place. */
+[data-reveal] > * {
+  transform-origin: left center;
+  transition:
+    opacity 600ms ease-out var(--rd, 0ms),
+    translate var(--throw-dur) var(--throw) var(--rd, 0ms),
+    scale 700ms var(--snap) var(--rd, 0ms),
+    filter 700ms var(--snap) var(--rd, 0ms);
+}
+[data-reveal] > :not([data-in]) { opacity: 0; translate: -22px 10px; scale: 1.06 1; filter: blur(8px); }
+
+/* Cards bleed in: the image spreads out from a point like ink in paper, the caption follows. */
+[data-bleed] > :first-child { clip-path: circle(125% at 35% 40%); transition: clip-path 1100ms var(--seep) var(--rd, 0ms); }
+[data-bleed] > :not(:first-child) { transition: opacity 600ms ease-out calc(var(--rd, 0ms) + 300ms); }
+[data-bleed]:not([data-in]) > :first-child { clip-path: circle(0% at 35% 40%); }
+[data-bleed]:not([data-in]) > :not(:first-child) { opacity: 0; }
+
+@media (prefers-reduced-motion: reduce) {
+  [data-reveal] > *, [data-bleed] > * { opacity: 1 !important; translate: none !important; scale: none !important; filter: none !important; clip-path: none !important; }
+}
+
+/* A selectable row or card: on hover the whole thing lights up and frosts what's behind it,
+   so image and text read as one target. */
+.lift {
+  border: 1px solid transparent;
+  transition: background-color var(--snap-dur) var(--snap), border-color var(--snap-dur) var(--snap), backdrop-filter var(--snap-dur) var(--snap);
+}
+.lift:hover {
+  background-color: color-mix(in srgb, var(--leaf) 5%, transparent);
+  border-color: var(--line);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}
+
+/* The pointer is a fountain pen; the nib tip is the hotspot. Fields keep their text caret. */
+html { cursor: url('/cursor-pen.svg') 2 30, auto; }
+a, button, [role='button'], label, summary { cursor: url('/cursor-pen.svg') 2 30, pointer; }

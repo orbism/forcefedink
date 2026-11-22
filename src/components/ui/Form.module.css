@@ -8,12 +8,26 @@
   width: 100%;
   padding: 0.7rem 0.85rem;
   font: inherit;
-  color: var(--gold);
-  background: var(--ink-deep);
-  border: 1px solid var(--line-soft);
+  color: var(--paper);
+  /* A deckled gilt edge, like the sheet's torn edge; the shape is drawn in the image. */
+  background: url('/textures/field.svg') 0 0 / 100% 100% no-repeat;
+  border: 0;
   border-radius: 0;
+  transition: filter var(--snap-dur) var(--snap);
 }
-.input:focus, .textarea:focus, .select:focus { border-color: var(--gold); outline: none; }
+/* Focused fields light up: bright edge, the well lifts, a warm glow around the shape. */
+.input:focus, .textarea:focus, .select:focus {
+  background-image: url('/textures/field-focus.svg');
+  filter: drop-shadow(0 0 10px color-mix(in srgb, var(--leaf) 45%, transparent));
+  outline: none;
+}
+/* The footer unit keeps a straight edge. */
+.unit:focus-within {
+  border-color: var(--leaf);
+  background-color: color-mix(in srgb, var(--leaf) 9%, var(--ink-deep));
+  box-shadow: 0 0 0 1px var(--leaf), 0 0 22px color-mix(in srgb, var(--leaf) 40%, transparent);
+}
+.input::placeholder, .textarea::placeholder { color: color-mix(in srgb, var(--gold) 55%, transparent); }
 .textarea { min-height: 8rem; resize: vertical; }
 .select { appearance: none; }
 
@@ -33,3 +47,68 @@
 .inline { display: flex; gap: var(--s-2); align-items: stretch; }
 .inline .input { flex: 1; }
 .inline button { margin-top: 0; width: auto; white-space: nowrap; }
+
+/* --- footer notify: label, then field + button as one unit -------------------------- */
+.notify { position: relative; display: flex; align-items: center; gap: var(--s-3); }
+.notify .status { position: absolute; bottom: calc(100% + var(--s-2)); left: 0; white-space: nowrap; font-size: var(--t-xs); }
+.notifyLabel {
+  font-size: var(--t-xs);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--leaf);
+  white-space: nowrap;
+}
+.unit {
+  position: relative;
+  display: flex;
+  height: 2rem;
+  width: 15rem;
+  border: 1px solid var(--line-indigo);
+  background: var(--ink-deep);
+  overflow: hidden;
+  transition: width var(--throw-dur) var(--throw), border-color var(--snap-dur) var(--snap), box-shadow var(--snap-dur) var(--snap), background-color var(--snap-dur) var(--snap);
+}
+.unit .input { flex: 1; min-width: 0; height: 100%; padding: 0 0.7rem; border: 0; font-size: var(--t-sm); background: transparent; }
+.unit .input:focus { background: transparent; filter: none; }
+.unitBtn {
+  flex: none;
+  padding: 0 0.9rem;
+  font-size: var(--t-xs);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--leaf);
+  background: var(--indigo);
+  border-left: 1px solid var(--indigo-lift);
+  transition: background-color var(--snap-dur) var(--snap), color var(--snap-dur) var(--snap);
+}
+.unitBtn:hover { background: var(--indigo-lift); color: var(--paper); }
+
+/* Focus: the unit springs wider, its edge lights up, and a bead of gold ink runs along the
+   bottom once. Leaving it springs back. */
+.unit:focus-within { width: 26rem; }
+.unit::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 40%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--leaf), transparent);
+  opacity: 0;
+  pointer-events: none;
+}
+.unit:focus-within::after { animation: ink-run 900ms var(--snap) 120ms both; }
+@keyframes ink-run { 0% { opacity: 1; translate: -100% 0; } 85% { opacity: 1; } 100% { opacity: 0; translate: 250% 0; } }
+
+/* Narrow: no label; focused, the unit opens across the whole footer. */
+@media (max-width: 899px) {
+  .notifyLabel { display: none; }
+  .unit { width: 10.5rem; z-index: 2; }
+  .unit:focus-within { width: calc(100vw - 2 * var(--gutter)); }
+}
+/* Phones: only the label shows; tapping it opens the unit over the footer from zero width. */
+@media (max-width: 559px) {
+  .notifyLabel { display: block; }
+  .unit { position: absolute; left: 0; width: 0; border-color: transparent; }
+}
+@media (prefers-reduced-motion: reduce) { .unit:focus-within::after { animation: none; } }

@@ -1,0 +1,52 @@
+/*
+ * The display face's vertical metrics (ascent, descent as fractions of the em), measured in
+ * the browser. With them, the baseline of an inline-block word whose line height is --lh
+ * sits at (lh + ascent − descent) / 2 em from its top — where the SVG copy is placed.
+ * Callers set --lh (unitless) instead of line-height.
+ */
+.wrap {
+  --asc: 0.92;
+  --desc: 0.29;
+  display: block;
+  line-height: var(--lh, 1.06);
+}
+
+.line { display: block; }
+.word { position: relative; display: inline-block; white-space: nowrap; }
+
+/* The real text: invisible fill, but it carries the dark outline and soft shadow that keep
+   the title legible over ink and pattern. Both arrive with the flood. */
+.ghost {
+  color: transparent;
+  -webkit-text-stroke-color: transparent;
+  text-shadow: 0 1px 16px transparent;
+  animation: ground 600ms ease-out both;
+  animation-delay: calc(var(--d, 0ms) + var(--fill));
+}
+@keyframes ground {
+  to { -webkit-text-stroke-color: rgb(12 11 14 / 0.7); text-shadow: 0 1px 16px rgb(20 19 23 / 0.85); }
+}
+
+.svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
+.svg text {
+  transform: translateY(calc((var(--lh, 1.06) + var(--asc) - var(--desc)) / 2 * 1em));
+  fill: currentColor;
+  fill-opacity: 0;
+  stroke: currentColor;
+  stroke-width: 0.018em;
+  stroke-dasharray: 5em;
+  stroke-dashoffset: 5em;
+  -webkit-text-stroke: 0;
+  text-shadow: none;
+  animation:
+    trace var(--draw) cubic-bezier(0.4, 0, 0.2, 1) both,
+    flood 600ms ease-out both;
+  animation-delay: var(--d, 0ms), calc(var(--d, 0ms) + var(--fill));
+}
+@keyframes trace { to { stroke-dashoffset: 0; } }
+@keyframes flood { to { fill-opacity: 1; stroke-opacity: 0; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .ghost { animation: none; -webkit-text-stroke-color: rgb(12 11 14 / 0.7); text-shadow: 0 1px 16px rgb(20 19 23 / 0.85); }
+  .svg text { animation: none; fill-opacity: 1; stroke-opacity: 0; }
+}

@@ -1,4 +1,6 @@
 .header {
+  /* Header text sits between gold and leaf: brighter than body gold, short of hover. */
+  --header-ink: color-mix(in srgb, var(--gold) 55%, var(--leaf));
   position: fixed;
   inset: 0 0 auto;
   z-index: 60;
@@ -17,7 +19,7 @@
   display: flex;
   align-items: center;
   gap: var(--s-3);
-  color: var(--gold);
+  color: var(--header-ink);
   margin-right: auto;
 }
 
@@ -35,9 +37,10 @@
 .link {
   font-family: var(--font-display);
   font-size: 1.2rem;
-  color: var(--gold-dim);
+  color: var(--header-ink);
   position: relative;
   padding-block: var(--s-1);
+  white-space: nowrap;
 }
 .link::after {
   content: '';
@@ -49,11 +52,30 @@
   background: var(--gold-hot);
   transform: scaleX(0);
   transform-origin: right;
-  transition: transform 320ms var(--ease-ink);
+  transition: transform var(--snap-dur) var(--snap);
 }
 .link:hover::after,
 .link[aria-current='page']::after { transform: scaleX(1); transform-origin: left; }
-.link[aria-current='page'] { color: var(--gold); }
+/* The section you're in: underlined in indigo, a touch heavier than the hover line. */
+.link[aria-current='page'] { color: var(--leaf); }
+.link[aria-current='page']::after { height: 2px; background: var(--indigo-lift); }
+
+/* Contact sits apart from the nav as a quiet indigo-edged button. */
+.contact {
+  align-self: center;
+  margin-left: var(--s-2);
+  padding: 0.4rem 0.95rem;
+  font-family: var(--font-ui);
+  font-size: var(--t-xs);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--header-ink);
+  border: 1px solid var(--line-indigo);
+  transition: background-color var(--snap-dur) var(--snap), border-color var(--snap-dur) var(--snap), color var(--snap-dur) var(--snap);
+}
+.contact:hover,
+.contact[aria-current='page'] { color: var(--leaf); border-color: var(--indigo-lift); background: color-mix(in srgb, var(--indigo) 45%, transparent); }
 
 .burger { display: grid; place-items: center; width: 2.25rem; height: 2.25rem; }
 .burgerBox { display: grid; gap: 5px; width: 22px; }
@@ -61,7 +83,7 @@
   display: block;
   height: 1.5px;
   background: var(--paper);
-  transition: transform 320ms var(--ease-ink), opacity 150ms linear;
+  transition: transform var(--snap-dur) var(--snap), opacity var(--snap-dur) var(--snap);
 }
 .burgerBox[data-open] > span:nth-child(1) { transform: translateY(6.5px) rotate(45deg); }
 .burgerBox[data-open] > span:nth-child(2) { opacity: 0; }
@@ -84,7 +106,7 @@
   color: var(--gold);
   opacity: 0;
   transform: translateY(-0.4em);
-  animation: drop 460ms var(--ease-ink) forwards;
+  animation: drop var(--throw-dur) var(--throw) forwards;
   animation-delay: calc(var(--i) * 45ms);
 }
 /* `display: grid` above would otherwise override the hidden attribute and pin it open. */
@@ -108,8 +130,23 @@
 .header[data-home] .wordmark { font-size: 1.9rem; }
 .header[data-home] .link { font-size: 1.45rem; }
 .header[data-home] .nav { gap: var(--s-8); }
+@media (min-width: 900px) and (max-width: 1199px) {
+  .nav { gap: var(--s-6); }
+  .header[data-home] .link { font-size: 1.2rem; }
+  .header[data-home] .nav { gap: var(--s-6); }
+}
 @media (max-width: 899px) {
   :root:has(.header[data-home]) { --header-h: 5rem; }
   .header[data-home] .mark { --mark-size: 46px !important; }
   .header[data-home] .wordmark { font-size: 1.4rem; }
+}
+
+/* Short screens (phones on their side): every pixel of height counts. */
+@media (max-height: 520px) {
+  :root,
+  :root:has(.header[data-home]) { --header-h: 3.5rem; }
+  .mark,
+  .header[data-home] .mark { --mark-size: 32px !important; }
+  .wordmark,
+  .header[data-home] .wordmark { font-size: 1.15rem; }
 }

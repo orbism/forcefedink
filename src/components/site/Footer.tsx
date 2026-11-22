@@ -1,6 +1,9 @@
 'use client'
 
+import Link from 'next/link'
 import { useState } from 'react'
+
+import { SubscribeForm } from '@/components/ui/SubscribeForm'
 
 import { ContactPopup } from './ContactPopup'
 import { MusicPlayer } from './MusicPlayer'
@@ -38,13 +41,18 @@ export function Footer({ settings }: { settings: Settings }) {
   return (
     <>
       <footer className={styles.footer}>
-        {audio?.url ? (
-          <MusicPlayer src={audio.url} title={settings?.audioTitle ?? audio.filename} />
-        ) : (
-          <span />
-        )}
+        <div className={styles.left}>
+          <SubscribeForm source="footer" compact />
+          {audio?.url && <MusicPlayer src={audio.url} title={settings?.audioTitle ?? audio.filename} />}
+        </div>
 
         <div className={styles.right}>
+          <Link href="/faq" className={styles.text}>
+            FAQ
+          </Link>
+          <Link href="/shipping" className={styles.text}>
+            Shipping
+          </Link>
           <a
             className={styles.icon}
             href={instagram}

@@ -1,8 +1,9 @@
 import type { Metadata } from 'next'
 
-import { CardGrid, type CardItem } from '@/components/ui/CardGrid'
+import { card, CardGrid, type CardItem } from '@/components/ui/CardGrid'
 import { StageHead } from '@/components/ui/StageHead'
-import { mediaUrl } from '@/lib/format'
+import { ViewToggle } from '@/components/ui/ViewToggle'
+import { pic } from '@/lib/format'
 import { getArtworks, getSeriesList } from '@/lib/queries'
 import { PageStage } from '@/motion/PageStage'
 
@@ -23,7 +24,7 @@ export default async function ArchivePage() {
     return {
       href: `/archive/${sr.slug}`,
       title: sr.title,
-      image: mediaUrl(sr.cover, 'card') ?? mediaUrl(inSeries[0]?.images?.[0]?.image, 'card'),
+      ...card(pic('card', sr.cover, inSeries[0]?.images?.[0]?.image)),
       alt: sr.title,
       sub: `${inSeries.length} ${inSeries.length === 1 ? 'work' : 'works'}`,
     }
@@ -34,9 +35,12 @@ export default async function ArchivePage() {
       from="right"
       motif="cuenca"
       burst={3}
-      head={<StageHead eyebrow="Archive" title={['Geometry,', 'by hand.']} detail={['Split by series.']} />}
+      head={<StageHead title={['Archive']} detail={['Works by series.']} />}
     >
-      {items.length === 0 ? <p className={styles.empty}>Nothing archived yet.</p> : <CardGrid items={items} sizes="40vw" />}
+      <div className={styles.toolbar}>
+        <ViewToggle />
+      </div>
+      {items.length === 0 ? <p className={styles.empty}>Nothing is archived.</p> : <CardGrid items={items} sizes="40vw" />}
     </PageStage>
   )
 }

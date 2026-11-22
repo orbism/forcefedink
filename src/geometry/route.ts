@@ -10,7 +10,7 @@ import type { GeoPath, Hue } from './patterns'
  * is. A pull toward the corner keeps the cluster growing outward.
  */
 export type Pt = [number, number]
-export type Tile = { pts: Pt[]; hue: Hue; weight: number; kind: number; dist: number; len: number }
+export type Tile = { pts: Pt[]; hue: Hue; weight: number; kind: number; dist: number; len: number; guide: string }
 export type Rect = { x0: number; x1: number; y0: number; y1: number }
 
 const key = ([x, y]: Pt) => `${Math.round(x * 2)},${Math.round(y * 2)}`
@@ -33,7 +33,7 @@ const lengthOf = (pts: Pt[]) => pts.reduce((l, p, i) => (i ? l + Math.hypot(p[0]
 export function tilesOf(paths: GeoPath[], dists: number[]) {
   const tiles: Tile[] = paths.map((p, i) => {
     const pts = loopOf(p.d)
-    return { pts, hue: p.hue, weight: p.weight, kind: p.kind ?? 0, dist: dists[i], len: lengthOf(pts) }
+    return { pts, hue: p.hue, weight: p.weight, kind: p.kind ?? 0, dist: dists[i], len: lengthOf(pts), guide: p.guide }
   })
   // Shapes sharing any point are neighbours.
   const owners = new Map<string, number[]>()

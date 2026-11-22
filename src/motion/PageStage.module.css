@@ -5,7 +5,9 @@
  */
 .stage {
   /* Resting sheet height, and how tall it may grow as the reader scrolls (--p: 0 → 1). */
-  --sheet: 50dvh;
+  --sheet: 60dvh;
+  /* Side panel width; detail pages keep it narrower so the artwork gets the room. */
+  --side: min(60vw, 54rem);
   --sheet-max: calc(100dvh - var(--header-h) - var(--footer-h) - 7dvh);
   --p: 0;
   position: relative;
@@ -26,9 +28,10 @@
   clip-path: inset(-100vh -100vw 0 -100vw);
 }
 
+.stage[data-showcase] { --side: min(52vw, 46rem); }
 .stage[data-from='bottom'] .topLeft { bottom: calc(var(--sheet) + var(--footer-h) + var(--s-4)); }
-.stage[data-from='left'] .topLeft { left: calc(min(52vw, 46rem) + var(--gutter)); }
-.stage[data-from='right'] .topLeft { right: calc(min(52vw, 46rem) + var(--gutter)); }
+.stage[data-from='left'] .topLeft { left: calc(var(--side) + var(--gutter)); }
+.stage[data-from='right'] .topLeft { right: calc(var(--side) + var(--gutter)); }
 
 /*
  * The free area not covered by the canvas. The pattern starts in its top-right corner and
@@ -45,33 +48,30 @@
   opacity: 0.9;
 }
 .stage[data-from='bottom'] .topRight { bottom: calc(var(--sheet) + var(--footer-h)); }
-.stage[data-from='right'] .topRight { right: min(52vw, 46rem); }
-.stage[data-from='left'] .topRight { left: min(52vw, 46rem); }
+.stage[data-from='right'] .topRight { right: var(--side); }
+.stage[data-from='left'] .topRight { left: var(--side); }
 
 .backdrop { position: absolute; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
-:global(html[data-leaving]) .backdrop { opacity: 0; transition: opacity 220ms ease-in; }
 
 .canvas {
   position: absolute;
   /* Above the head: as the sheet grows it slides over the hero, never under it. */
   z-index: 4;
   background-color: var(--canvas);
+  /* Text on the sheet runs a step brighter than the chrome around it. */
+  --gold: #e4ca82;
+  --gold-dim: #c49e50;
+  color: var(--gold);
   will-change: transform;
-  /* Slight overshoot on arrival: the sheet is thrown in and settles. */
-  transition: transform var(--slide-dur, 760ms) cubic-bezier(0.18, 1.12, 0.32, 1);
+  /* Thrown in on a spring: slight overshoot, then it settles. */
+  transition: transform var(--throw-dur) var(--throw);
   isolation: isolate;
 }
 
 /* Torn leading edge, outside the sheet so the content box stays square. */
 .deckle { position: absolute; pointer-events: none; overflow: visible; }
 .deckleFill { fill: var(--canvas); }
-.deckleLine {
-  fill: none;
-  stroke: var(--gold);
-  stroke-opacity: 0.4;
-  stroke-width: 1;
-  vector-effect: non-scaling-stroke;
-}
+.deckleLine { fill: var(--gold); fill-opacity: 0.4; }
 .deckleMobile { display: none; position: absolute; left: 0; right: 0; bottom: 100%; width: 100%; height: 16px; overflow: visible; }
 .canvas[data-side='bottom'] .deckle { left: 0; right: 0; bottom: 100%; width: 100%; height: 16px; }
 .canvas[data-side='left'] .deckle { top: 0; bottom: 0; left: 100%; width: 16px; height: 100%; }
@@ -89,6 +89,26 @@
   mix-blend-mode: overlay;
   pointer-events: none;
 }
+
+/* Behind the content: the page's construction, very dim, inked in by scroll (--t). A sixth
+   is there at rest; a short scroll draws most of it, many shapes at once. */
+.sheetPattern { position: absolute; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; opacity: 0.07; }
+.sheetPattern :global(svg) { width: 100%; height: 100%; display: block; }
+.sheetPattern :global(path) {
+  fill: none;
+  stroke: var(--gold);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+  stroke-dasharray: 1;
+  stroke-dashoffset: clamp(0, calc(1 - (var(--t, 0) * 1.3 + 0.15 - var(--k)) * 10), 1);
+}
+
+/* Bottom sheets centre their content in a readable column. */
+.stage[data-from='bottom'] .flow { max-width: 76rem; margin-inline: auto; }
+
+/* Elastic ends: held while pulled, springs home on release. */
+.flow { transition: translate var(--throw-dur) var(--throw); }
+.flow[data-held] { transition: none; }
 
 .scroll {
   height: 100%;
@@ -114,7 +134,7 @@
   left: 0;
   top: var(--header-h);
   bottom: var(--footer-h);
-  width: min(52vw, 46rem);
+  width: var(--side);
   transform: translate3d(calc(-100% - 20px), 0, 0);
 }
 
@@ -122,7 +142,7 @@
   right: 0;
   top: var(--header-h);
   bottom: var(--footer-h);
-  width: min(52vw, 46rem);
+  width: var(--side);
   transform: translate3d(calc(100% + 20px), 0, 0);
 }
 
@@ -148,7 +168,7 @@
   --t-xl: clamp(1.5rem, 2.9vw, 2.3rem);
 }
 
-@media (max-width: 760px) {
+@media (max-width: 899px) {
   .stage[data-from='left'],
   .stage[data-from='right'] { --sheet: 58dvh; }
   .canvas[data-side='left'],
@@ -171,6 +191,12 @@
     right: var(--gutter);
     bottom: calc(var(--sheet) + var(--footer-h) + var(--s-4));
   }
+  /* Narrow screens have no side panel to share the width with: the head takes most of it,
+     at the full title size (the side-split squeeze to 34vw read as three cramped lines). */
+  .topLeft,
+  .stage[data-from] .topLeft { max-width: min(36rem, 80vw); --t-xl: clamp(2rem, 7vw, 2.8rem); }
+  /* Detail pages: the piece is the point, so the sheet rests lower and the print gets room. */
+  .stage[data-showcase] { --sheet: 44dvh; }
   /* Narrow screens put the pattern behind the title; it steps back so the type leads. */
   .topRight,
   .stage[data-from] .topRight { --motif: 64vmin; left: 0; right: 0; opacity: 0.4; }
@@ -178,31 +204,15 @@
   .stage[data-from='right'] .topRight { bottom: calc(var(--sheet) + var(--footer-h)); }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .canvas { transform: none !important; transition: none; }
+/* Phones on their side: little height, so titles step down to keep the head and a usable
+   sheet both on screen. */
+@media (max-height: 520px) {
+  .topLeft,
+  .stage[data-from] .topLeft { top: calc(var(--header-h) + var(--s-3)); --t-xl: clamp(1.5rem, 9dvh, 2rem); }
 }
 
-/* --- exit: everything accelerates away before the next page lays in (NavExit) --- */
-:global(html[data-leaving]) .topLeft {
-  opacity: 0;
-  filter: blur(10px);
-  transform: translate3d(-2%, -18px, 0) scale(0.97);
-  transition: opacity 200ms ease-in, filter 200ms ease-in, transform 220ms cubic-bezier(0.55, 0, 0.9, 0.4);
-}
-:global(html[data-leaving]) .topRight {
-  opacity: 0;
-  filter: blur(6px);
-  transform: scale(1.06);
-  transition: opacity 220ms ease-in, filter 220ms ease-in, transform 240ms cubic-bezier(0.55, 0, 0.9, 0.4);
-}
-:global(html[data-leaving]) .canvas {
-  transition: transform 240ms cubic-bezier(0.6, 0, 0.95, 0.35);
-}
-:global(html[data-leaving]) .canvas[data-side='bottom'] { transform: translate3d(0, calc(100% + 20px), 0); }
-:global(html[data-leaving]) .canvas[data-side='left'] { transform: translate3d(calc(-100% - 20px), 0, 0); }
-:global(html[data-leaving]) .canvas[data-side='right'] { transform: translate3d(calc(100% + 20px), 0, 0); }
-@media (max-width: 760px) {
-  :global(html[data-leaving]) .canvas[data-side] { transform: translate3d(0, calc(100% + 20px), 0); }
+@media (prefers-reduced-motion: reduce) {
+  .canvas { transform: none !important; transition: none; }
 }
 
 /* --- scroll: the hero eases up and dims as the sheet takes over --------------- */
@@ -213,7 +223,7 @@
   will-change: translate, opacity;
 }
 /* Side splits keep their layout on wide screens; the hero stays put. */
-@media (min-width: 761px) {
+@media (min-width: 900px) {
   .stage[data-from='left'] .headInner,
   .stage[data-from='right'] .headInner,
   .stage[data-from='left'] .topRight > *,
@@ -223,10 +233,10 @@
 /* Where the sheet grows, its lower part starts parked below the fold. Padding by that much
    keeps the last content reachable at rest and guarantees there is scroll to grow with. */
 .stage[data-from='bottom'] .scroll { padding-bottom: calc(var(--sheet-max) - var(--sheet) + var(--s-8)); }
-@media (max-width: 760px) {
+@media (max-width: 899px) {
   .stage .scroll { padding-bottom: calc(var(--sheet-max) - var(--sheet) + var(--s-8)); }
 }
 
 /* Detail pages: the free area shows the piece itself, fading up as the canvas arrives. */
-.showcase { opacity: 0; transition: opacity 700ms ease-out 200ms; }
+.showcase { opacity: 0; transition: opacity var(--throw-dur) var(--snap) 120ms; }
 .showcase[data-entered] { opacity: 1; }

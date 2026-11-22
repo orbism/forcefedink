@@ -9,21 +9,50 @@
 }
 .frame img { width: 100%; height: 100%; object-fit: cover; }
 
-.link { display: block; }
-.link:hover .frame { border-color: var(--line); }
+.link { display: block; padding: var(--s-3); }
+.link:hover .frame { border-color: var(--line-indigo); }
 .link:hover img { opacity: 0.92; }
-.frame img { transition: opacity 220ms linear; }
+.frame img { transition: opacity var(--snap-dur) var(--snap); }
 
 .grid {
   display: grid;
   gap: var(--s-8);
-  /* 17rem tracks left a side canvas (~536px inner) stuck on one column; 13rem gives it
-     two and a full-width canvas four. */
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 13rem), 1fr));
+  /* Medium thumbs, centred: tracks cap at 16rem so a short row sits in the middle. */
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 16rem));
+  justify-content: center;
 }
+.meta { margin-top: var(--s-4); display: grid; gap: var(--s-2); justify-items: center; text-align: center; }
+.meta > :last-child:not(:first-child) { margin-top: var(--s-1); }
 
-.meta { margin-top: var(--s-3); display: grid; gap: var(--s-1); }
-.title { font-family: var(--font-display); font-size: var(--t-md); color: var(--gold); line-height: 1.2; }
+/* Views (ViewToggle sets html[data-view]). Large: bigger thumbs. */
+:global(html[data-view='large']) .grid { grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 30rem)); }
+/* List: one per row, medium thumb on the left, details to its right. */
+:global(html[data-view='list']) .grid { grid-template-columns: minmax(0, 52rem); gap: var(--s-4); }
+:global(html[data-view='list']) .grid > .link { display: grid; grid-template-columns: 13rem 1fr; gap: var(--s-8); align-items: center; padding: var(--s-4); border-bottom-color: var(--line-soft); }
+:global(html[data-view='list']) .grid .meta { margin-top: 0; gap: var(--s-3); justify-items: start; text-align: left; }
+:global(html[data-view='list']) .grid .title { font-size: var(--t-lg); }
+@media (max-width: 559px) {
+  :global(html[data-view='list']) .grid > .link { grid-template-columns: 7rem 1fr; gap: var(--s-4); }
+}
+/* Side panels (wide screens): every item on its own row. */
+@media (min-width: 900px) {
+  :global([data-from='left']) .grid,
+  :global([data-from='right']) .grid { grid-template-columns: minmax(0, 22rem); }
+  :global(html[data-view='large']) :global([data-from='left']) .grid,
+  :global(html[data-view='large']) :global([data-from='right']) .grid { grid-template-columns: minmax(0, 1fr); }
+  :global(html[data-view='list']) :global([data-from='left']) .grid,
+  :global(html[data-view='list']) :global([data-from='right']) .grid { grid-template-columns: minmax(0, 1fr); }
+}
+/* Title over a full-width gilt rule. */
+.title {
+  font-family: var(--font-display);
+  font-size: var(--t-md);
+  color: var(--leaf);
+  line-height: 1.2;
+  padding-bottom: var(--s-1);
+  border-bottom: 1px solid;
+  border-image: linear-gradient(90deg, var(--gold), var(--indigo-lift)) 1;
+}
 .sub { color: var(--gold-dim); font-size: var(--t-sm); }
 
 .badge {
@@ -36,5 +65,5 @@
   border: 1px solid var(--line);
   color: var(--gold-dim);
 }
-.badge[data-tone='live'] { color: var(--gold-hot); border-color: var(--gold-hot); }
+.badge[data-tone='live'] { color: var(--leaf); border-color: var(--indigo-lift); background: color-mix(in srgb, var(--indigo) 55%, transparent); }
 .badge[data-tone='sold'] { color: var(--sold); border-color: color-mix(in srgb, var(--sold) 45%, transparent); }

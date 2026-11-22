@@ -8,28 +8,14 @@ export function InkDefs() {
   return (
     <svg width="0" height="0" aria-hidden="true" focusable="false" style={{ position: 'absolute' }}>
       <defs>
-        {/* Metallic sheen across a 1000-unit motif: light and dark bands, like gilding. */}
-        <linearGradient id="ink-sheen" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="1000" y2="1000">
-          <stop offset="0" stopColor="#f3dc8c" />
-          <stop offset=".3" stopColor="#b98c33" />
-          <stop offset=".5" stopColor="#f7e6a8" />
-          <stop offset=".72" stopColor="#a97a26" />
-          <stop offset="1" stopColor="#e2c270" />
-        </linearGradient>
-
-        {/* Splatter fill, sized to the splat's own 640×360 box. */}
-        <linearGradient id="ink-gold" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="640" y2="360">
-          <stop offset="0" stopColor="#d9b85e" />
-          <stop offset=".5" stopColor="#b8913a" />
-          <stop offset="1" stopColor="#9a7428" />
-        </linearGradient>
-
-        {/* Antique bronze-gold for splashes that sit under type: deep enough that the gold
-            title reads on top. */}
-        <linearGradient id="ink-bronze" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="640" y2="360">
-          <stop offset="0" stopColor="#a47c2e" />
-          <stop offset=".5" stopColor="#86621f" />
-          <stop offset="1" stopColor="#6c4d17" />
+        {/* Gilt across a 1000-unit motif: the leaf-to-bronze ramp in light and dark bands,
+            reflected so the bands carry on across the whole field. */}
+        <linearGradient id="ink-sheen" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="1000" y2="1000" spreadMethod="reflect">
+          <stop offset="0" stopColor="#f2dc94" />
+          <stop offset=".3" stopColor="#b08a3a" />
+          <stop offset=".5" stopColor="#f8ebbd" />
+          <stop offset=".72" stopColor="#7a5a22" />
+          <stop offset="1" stopColor="#d9bd72" />
         </linearGradient>
 
         {/* Spilled pool, sized to the spill’s 1000×1000 box. */}
@@ -38,20 +24,6 @@ export function InkDefs() {
           <stop offset=".55" stopColor="#6e5019" />
           <stop offset="1" stopColor="#584012" />
         </linearGradient>
-
-        {/* Linework: a slow hand wobble, dry-brush breakup, and a soft wet bloom. */}
-        <filter id="ink-line" x="-5%" y="-5%" width="110%" height="110%" colorInterpolationFilters="sRGB">
-          <feTurbulence type="fractalNoise" baseFrequency=".012" numOctaves={2} seed={7} result="w" />
-          <feDisplacementMap in="SourceGraphic" in2="w" scale={5} xChannelSelector="R" yChannelSelector="G" result="wob" />
-          <feTurbulence type="fractalNoise" baseFrequency=".6" numOctaves={1} seed={3} result="grain" />
-          <feColorMatrix in="grain" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -1.3 1.25" result="grainA" />
-          <feComposite in="wob" in2="grainA" operator="in" result="dry" />
-          <feGaussianBlur in="dry" stdDeviation="2.2" result="bloom" />
-          <feMerge>
-            <feMergeNode in="bloom" />
-            <feMergeNode in="dry" />
-          </feMerge>
-        </filter>
 
         {/* Crisp ink: sharp flat splatter. A whisper of edge displacement so outlines never
             read as vector, faint paper grain, and a thin darker rim where pigment pools. */}

@@ -1,102 +1,92 @@
 import Link from 'next/link'
 
 import { buttonStyles } from '@/components/ui/EnquiryButton'
+import { InkMeter } from '@/components/shop/InkMeter'
 import { Countdown } from '@/components/ui/Countdown'
 import { SubscribeForm } from '@/components/ui/SubscribeForm'
 import { InkSplat } from '@/ink/InkSplat'
-import { asDoc, mediaUrl, money } from '@/lib/format'
-import { getNextDrop, getPastDrops, getSiteSettings } from '@/lib/queries'
+import { mediaUrl, money, when } from '@/lib/format'
+import { getNextEdition, getPastEditions, getSiteSettings } from '@/lib/queries'
 import { PageStage } from '@/motion/PageStage'
-import { ENTER_DELAY } from '@/motion/timing'
+import { ENTER_DELAY, traceEnd, traceFlood } from '@/motion/timing'
+import { TraceTitle } from '@/motion/TraceTitle'
 import { TypeIn } from '@/motion/TypeIn'
-import type { Artwork, Drop } from '@/payload-types'
+import type { Edition } from '@/lib/shop'
 
+import stage from './stage.module.css'
 import styles from './page.module.css'
 
+const STACK = ['Force', 'Fed', 'Ink']
 const STACK_START = ENTER_DELAY + 140
-/** Force / Fed / Ink at 70ms a letter with 90ms between lines. */
-const STACK_DONE = STACK_START + 11 * 70 + 2 * 90
 
-/** Server-formatted in a fixed locale and zone, so it can never mismatch on hydration. */
-const when = (iso: string, withTime = false) =>
-  new Date(iso).toLocaleString('en-US', {
-    timeZone: 'UTC',
-    weekday: withTime ? 'short' : undefined,
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-    ...(withTime ? { hour: 'numeric', minute: '2-digit', timeZoneName: 'short' } : {}),
-  })
-
-const thumb = (d: Drop) => {
-  const art = asDoc<Artwork>(d.artwork)
-  return mediaUrl(d.images?.[0]?.image, 'thumb') ?? mediaUrl(art?.images?.[0]?.image, 'thumb')
-}
+const thumb = (e: Edition) => mediaUrl(e.images?.[0]?.image, 'thumb') ?? mediaUrl(e.artwork?.images?.[0]?.image, 'thumb')
 
 export default async function HomePage() {
-  const [next, past, settings] = await Promise.all([getNextDrop(), getPastDrops(), getSiteSettings()])
-  const tagline = settings?.hero?.tagline || 'Geometry in gold ink, released in small numbered runs.'
+  const [next, past, settings] = await Promise.all([getNextEdition(), getPastEditions(), getSiteSettings()])
+  const tagline = settings?.hero?.tagline || 'Hand-drawn geometry in ink and gold. Limited editions.'
 
   return (
     <PageStage
       from="bottom"
       motif="konya"
       burst={6}
-      sheet="42dvh"
       head={
         <div className={styles.brand}>
           <div className={styles.stackWrap}>
-            <TypeIn lines={['Force', 'Fed', 'Ink']} as="h1" className={styles.stack} speedMs={70} linePauseMs={90} startDelayMs={STACK_START} />
-            <InkSplat scale={1.3} tone="bronze" aim={0} anchored delayMs={STACK_DONE - 140} className={styles.splat} />
+            <TraceTitle lines={STACK} as="h1" caps className={styles.stack} startDelayMs={STACK_START} />
+            <InkSplat delayMs={traceFlood(STACK, STACK_START)} className={styles.splat} />
           </div>
-          <TypeIn lines={[tagline]} as="p" className={styles.tagline} speedMs={16} startDelayMs={STACK_DONE + 120} />
+          <TypeIn lines={[tagline]} as="p" className={styles.tagline} speedMs={16} startDelayMs={traceEnd(STACK, STACK_START)} />
         </div>
       }
     >
       <div className={styles.cols}>
         <section>
-          <p className="label">Next drop</p>
-          {next?.released ? (
+          <h2 className={stage.groupTitle}>Next edition</h2>
+          {next?.release ? (
             <>
-              <Link href={`/drops/${next.slug}`} className={styles.nextTitle}>
+              <Link href={`/editions/${next.slug}`} className={styles.nextTitle}>
                 {next.title}
               </Link>
-              <Countdown target={next.released} />
-              <dl className={styles.facts}>
-                <div><dt className="label">Opens</dt><dd>{when(next.released, true)}</dd></div>
-                <div><dt className="label">Edition</dt><dd>{next.editionSize} prints, signed &amp; numbered</dd></div>
+              <Countdown target={next.release} />
+              <InkMeter run={next.run} sold={0} open={false} className={styles.meter} />
+              <dl className={stage.specs}>
+                <div><dt className="label">Opens</dt><dd>{when(next.release, true)}</dd></div>
+                <div><dt className="label">Edition</dt><dd>{next.run} prints, signed &amp; numbered</dd></div>
                 <div><dt className="label">Price</dt><dd>{money(next.price) ?? 'To be announced'}</dd></div>
-                {next.printDetails?.paper && <div><dt className="label">Paper</dt><dd>{next.printDetails.paper}</dd></div>}
-                {next.printDetails?.size && <div><dt className="label">Size</dt><dd>{next.printDetails.size}</dd></div>}
+                {next.paper && <div><dt className="label">Paper</dt><dd>{next.paper}</dd></div>}
+                {(next.sizes.length ? next.sizes.map((s) => s.label).join(', ') : next.size) && (
+                  <div><dt className="label">Size</dt><dd>{next.sizes.length ? next.sizes.map((s) => s.label).join(', ') : next.size}</dd></div>
+                )}
               </dl>
-              <p className={styles.note}>{settings?.shippingDisclaimer}</p>
+              {settings?.shippingDisclaimer && <p className={stage.note}>{settings.shippingDisclaimer}</p>}
               <div className={styles.actions}>
-                <Link href={`/drops/${next.slug}`} className={`${buttonStyles.btn} ${buttonStyles.ghost}`}>
-                  See the drop
+                <Link href={`/editions/${next.slug}`} className={`${buttonStyles.btn} ${buttonStyles.ghost}`}>
+                  View edition
                 </Link>
               </div>
-              <p className={`label ${styles.notifyLabel}`}>Get told when it opens</p>
+              <h3 className={`${stage.groupTitle} ${stage.tight}`}>Notify me</h3>
               <SubscribeForm source="home" />
             </>
           ) : (
-            <p className={styles.empty}>No drop scheduled yet. The mailing list gets told first.</p>
+            <p className={styles.empty}>No edition is scheduled. Subscribers hear first.</p>
           )}
         </section>
 
         {past.length > 0 && (
           <section>
-            <p className="label">Past drops</p>
+            <h2 className={stage.groupTitle}>Past editions</h2>
             <ul className={styles.past}>
               {past.map((d) => {
                 const src = thumb(d)
                 return (
                   <li key={d.id}>
-                    <Link href={`/drops/${d.slug}`} className={styles.pastRow}>
+                    <Link href={`/editions/${d.slug}`} className={`${styles.pastRow} lift`}>
                       {src ? <img src={src} alt="" className={styles.pastThumb} loading="lazy" /> : <span className={styles.pastThumb} />}
                       <span className={styles.pastText}>
                         <span className={styles.pastTitle}>{d.title}</span>
                         <span className={styles.pastMeta}>
-                          {d.released ? when(d.released) : '—'} · {d.editionsSold}/{d.editionSize} ·{' '}
+                          {d.release ? when(d.release) : '—'} · {d.sold}/{d.run} ·{' '}
                           {d.status === 'archived' ? 'Archived' : 'Sold out'}
                         </span>
                       </span>

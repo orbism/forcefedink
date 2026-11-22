@@ -14,6 +14,7 @@ import { getPayload } from 'payload'
 import sharp from 'sharp'
 
 import { brushSet } from '../src/brush/strokes'
+import { copyShop } from './shop-copy'
 
 const ADMIN_EMAIL = process.env.SEED_EMAIL ?? 'studio@forcefedink.com'
 const ADMIN_PASSWORD = process.env.SEED_PASSWORD ?? 'changeme123'
@@ -82,7 +83,7 @@ async function seed() {
   }
 
   // --- wipe content we own ----------------------------------------------
-  for (const collection of ['drops', 'originals', 'artworks', 'series', 'faqs', 'media'] as const) {
+  for (const collection of ['products', 'drops', 'originals', 'artworks', 'series', 'faqs', 'media'] as const) {
     await payload.delete({ collection, where: { id: { exists: true } } })
   }
 
@@ -124,7 +125,7 @@ async function seed() {
   await payload.create({
     collection: 'drops',
     data: {
-      title: 'Twelvefold Rosette — Drop 01',
+      title: 'Twelvefold Rosette',
       artwork: artworkIds.rosette12,
       editionSize: 25, editionsSold: 18, price: 180, released: new Date('2026-07-01').toISOString(),
       status: 'live',
@@ -134,7 +135,7 @@ async function seed() {
   await payload.create({
     collection: 'drops',
     data: {
-      title: 'Ammonite — Drop 02',
+      title: 'Ammonite',
       artwork: artworkIds.ammonite,
       editionSize: 40, editionsSold: 40, price: 220, released: new Date('2026-04-12').toISOString(),
       status: 'live', // the beforeChange hook flips this to soldout
@@ -144,7 +145,7 @@ async function seed() {
   await payload.create({
     collection: 'drops',
     data: {
-      title: 'Harmonograph II — Drop 03',
+      title: 'Harmonograph II',
       artwork: artworkIds.harmonographB,
       editionSize: 30, editionsSold: 0, price: 165, released: new Date('2026-10-01').toISOString(),
       status: 'upcoming',
@@ -168,9 +169,9 @@ async function seed() {
 
   // --- faqs --------------------------------------------------------------
   const faqs = [
-    ['When do prints ship?', 'shipping', 'All prints in a drop ship together once the run closes. If you order on day one you will not receive it before someone who orders on the last day.'],
+    ['When do prints ship?', 'shipping', 'Editions ship together when the run closes. If you order on day one you will not receive it before someone who orders on the last day.'],
     ['Are prints signed and numbered?', 'prints', 'Yes. Every print is signed and numbered by hand on the front lower edge.'],
-    ['What happens when a drop sells out?', 'prints', 'It does not come back. Editions are fixed at the size announced and are never reprinted.'],
+    ['What happens when an edition sells out?', 'prints', 'It does not come back. Editions are fixed at the size announced and are never reprinted.'],
     ['Can I buy an original?', 'originals', 'Where an original is still available it is listed with its price. Where no price is shown, get in touch.'],
     ['Do you take commissions?', 'commissions', 'Sometimes. The commissions page says whether they are open right now.'],
   ] as const
@@ -188,9 +189,9 @@ async function seed() {
       hero: {
         tagline: 'Original ink. Limited runs.',
         intro:
-          'Each drop is a fixed edition. When the run closes it does not come back — the prints ship together once the last one is spoken for.',
+          'Each edition is a fixed run. Once it closes, it is never reprinted.',
       },
-      shippingDisclaimer: 'All prints in a drop ship together once the run closes.',
+      shippingDisclaimer: 'Editions ship together when the run closes.',
       socials: [{ label: 'Instagram', href: 'https://instagram.com/forcefedink' }],
       footerNote: 'Drawn by hand in ink.',
     },
@@ -205,6 +206,8 @@ async function seed() {
   })
 
   console.log('seeded: 3 series, 6 artworks, 3 drops, 3 originals, 5 faqs, globals')
+  // The site reads from Products; seeded drops and originals are copied in.
+  await copyShop(payload)
   process.exit(0)
 }
 

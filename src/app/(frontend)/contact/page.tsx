@@ -1,8 +1,8 @@
 import type { Metadata } from 'next'
+import { Suspense } from 'react'
 
 import { EnquiryForm } from '@/components/ui/EnquiryForm'
 import { StageHead } from '@/components/ui/StageHead'
-import { SubscribeForm } from '@/components/ui/SubscribeForm'
 import { InkSpill } from '@/ink/InkSpill'
 import { PageStage } from '@/motion/PageStage'
 
@@ -16,31 +16,30 @@ export const metadata: Metadata = {
 const TYPES = ['print', 'original', 'commission', 'general'] as const
 type EnquiryType = (typeof TYPES)[number]
 
-export default async function ContactPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ type?: string; subject?: string }>
-}) {
+/** The only part that depends on the query string, so the stage paints first and this
+ *  streams in behind it. */
+async function Enquiry({ searchParams }: { searchParams: Promise<{ type?: string; subject?: string }> }) {
   const { type, subject } = await searchParams
   const defaultType: EnquiryType = TYPES.includes(type as EnquiryType) ? (type as EnquiryType) : 'general'
+  return (
+    <>
+      {subject && <p className={styles.lede}>About {subject}.</p>}
+      <EnquiryForm defaultType={defaultType} defaultSubject={subject} />
+    </>
+  )
+}
 
+export default function ContactPage({ searchParams }: { searchParams: Promise<{ type?: string; subject?: string }> }) {
   return (
     <PageStage
       from="right"
       motif="ouarzazate"
       backdrop={<InkSpill className={styles.spill} />}
-      head={
-        <StageHead
-          splash={false}
-          eyebrow="Contact"
-          title={['Get in touch.']}
-          detail={subject ? [`About ${subject}.`] : ['Prints, originals, commissions.']}
-        />
-      }
+      head={<StageHead splash={false} title={['Contact']} detail={['Editions, originals and commissions.']} />}
     >
-      <EnquiryForm defaultType={defaultType} defaultSubject={subject} />
-      <h2 className={styles.groupTitle}>Drop notifications</h2>
-      <SubscribeForm source="contact" />
+      <Suspense>
+        <Enquiry searchParams={searchParams} />
+      </Suspense>
     </PageStage>
   )
 }

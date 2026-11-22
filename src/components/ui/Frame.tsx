@@ -1,23 +1,24 @@
-import Image from 'next/image'
-
+import { BlurImage } from './BlurImage'
 import styles from './Frame.module.css'
 
 export function Frame({
   src,
   alt,
+  blur,
   ratio = 1,
   priority = false,
   sizes = '(min-width: 900px) 33vw, 100vw',
 }: {
   src: string
   alt: string
+  blur?: string | null
   ratio?: number
   priority?: boolean
   sizes?: string
 }) {
   return (
     <div className={styles.frame} style={{ '--frame-ratio': String(ratio) } as React.CSSProperties}>
-      <Image src={src} alt={alt} fill sizes={sizes} priority={priority} />
+      <BlurImage src={src} alt={alt} blur={blur} fill sizes={sizes} priority={priority} />
     </div>
   )
 }

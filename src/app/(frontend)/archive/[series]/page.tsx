@@ -1,9 +1,10 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 
-import { CardGrid, type CardItem } from '@/components/ui/CardGrid'
+import { card, CardGrid, type CardItem } from '@/components/ui/CardGrid'
 import { StageHead } from '@/components/ui/StageHead'
-import { mediaUrl } from '@/lib/format'
+import { ViewToggle } from '@/components/ui/ViewToggle'
+import { pic } from '@/lib/format'
 import { getArtworks, getSeries, getSeriesList } from '@/lib/queries'
 import { PageStage } from '@/motion/PageStage'
 
@@ -31,7 +32,7 @@ export default async function SeriesPage({ params }: Params) {
   const items: CardItem[] = artworks.map((a) => ({
     href: `/artwork/${a.slug}`,
     title: a.title,
-    image: mediaUrl(a.images?.[0]?.image, 'card'),
+    ...card(pic('card', a.images?.[0]?.image)),
     alt: a.title,
     sub: [a.year, a.medium].filter(Boolean).join(' · ') || null,
   }))
@@ -42,6 +43,9 @@ export default async function SeriesPage({ params }: Params) {
       motif="meknes"
       head={<StageHead eyebrow="Archive" title={[doc.title]} detail={doc.blurb ? [doc.blurb] : undefined} />}
     >
+      <div className={styles.toolbar}>
+        <ViewToggle />
+      </div>
       {items.length === 0 ? <p className={styles.empty}>Nothing in this series yet.</p> : <CardGrid items={items} sizes="40vw" />}
     </PageStage>
   )

@@ -1,15 +1,17 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 
+import { BackLink } from '@/components/ui/BackLink'
 import { EnquiryButton } from '@/components/ui/EnquiryButton'
 import { Carousel } from '@/components/ui/Carousel'
 import { RichText } from '@/components/ui/RichText'
 import { StageHead } from '@/components/ui/StageHead'
-import { asDoc, mediaUrl, originalAvailability } from '@/lib/format'
+import { asDoc, pic, originalAvailability } from '@/lib/format'
 import { getArtwork, getArtworks, getOriginalFor } from '@/lib/queries'
 import { PageStage } from '@/motion/PageStage'
 import type { Series } from '@/payload-types'
 
+import stage from '../../stage.module.css'
 import styles from './artwork.module.css'
 
 type Params = { params: Promise<{ slug: string }> }
@@ -37,8 +39,8 @@ export default async function ArtworkPage({ params }: Params) {
   const series = asDoc<Series>(artwork.series)
 
   const images = (artwork.images ?? [])
-    .map((i) => mediaUrl(i.image, 'full'))
-    .filter((u): u is string => Boolean(u))
+    .map((i) => pic('full', i.image))
+    .filter((p) => p !== null)
 
   const facts = [
     ['Year', artwork.year ? String(artwork.year) : null],
@@ -50,11 +52,12 @@ export default async function ArtworkPage({ params }: Params) {
   return (
     <PageStage
       from="right"
-      showcase={<Carousel slides={images.map((src) => ({ src, alt: artwork.title }))} label={`${artwork.title} images`} />}
+      showcase={<Carousel slides={images.map((p) => ({ ...p, alt: artwork.title }))} label={`${artwork.title} images`} />}
     >
+      <BackLink fallback={original ? '/originals' : series?.slug ? `/archive/${series.slug}` : '/archive'} />
       <StageHead eyebrow={series?.title ?? 'Original'} title={[artwork.title]} splash={false} />
 
-      <dl className={styles.facts}>
+      <dl className={stage.specs}>
         {facts.map(([k, v]) => (
           <div key={k}>
             <dt className="label">{k}</dt>
@@ -63,11 +66,12 @@ export default async function ArtworkPage({ params }: Params) {
         ))}
       </dl>
 
-      <div className={styles.original}>
-        <p className="label">Original</p>
+      <div>
+        <h2 className={`${stage.groupTitle} ${stage.tight}`}>Original</h2>
         {availability ? (
           <>
             <p className={styles.price}>{availability.label}</p>
+            {original?.description && <p className={stage.lead}>{original.description}</p>}
             <EnquiryButton
               type="original"
               subject={artwork.title}
@@ -83,7 +87,7 @@ export default async function ArtworkPage({ params }: Params) {
 
       {artwork.process && (
         <div className={styles.process}>
-          <p className="label">Process</p>
+          <h2 className={`${stage.groupTitle} ${stage.tight}`}>Process</h2>
           <RichText data={artwork.process} />
         </div>
       )}

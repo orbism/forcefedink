@@ -34,11 +34,29 @@ export const SiteSettings: GlobalConfig = {
       ],
     },
     {
+      name: 'about',
+      type: 'group',
+      fields: [
+        { name: 'byline', type: 'text', admin: { description: 'One line above the portrait and bio.' } },
+        { name: 'bio', type: 'richText', admin: { description: 'The About page text. Wraps around the portrait.' } },
+        { name: 'portrait', type: 'upload', relationTo: 'media', admin: { description: 'Shown top left on the About page.' } },
+      ],
+    },
+    {
+      name: 'shipping',
+      type: 'group',
+      label: 'Shipping page',
+      fields: [
+        { name: 'body', type: 'richText', admin: { description: 'Packing, dispatch and delivery. Wraps around the image.' } },
+        { name: 'image', type: 'upload', relationTo: 'media', admin: { description: 'Landscape works best.' } },
+      ],
+    },
+    {
       name: 'shippingDisclaimer',
       type: 'textarea',
       required: true,
-      defaultValue: 'All prints in a drop ship together once the run closes.',
-      admin: { description: 'Shown on every drop page and in the FAQ.' },
+      defaultValue: 'Editions ship together when the run closes.',
+      admin: { description: 'Shown on every edition page and in the FAQ.' },
     },
     {
       name: 'socials',
@@ -57,5 +75,5 @@ export const SiteSettings: GlobalConfig = {
     },
     { name: 'audioTitle', type: 'text', admin: { description: 'Label shown in the player tray.' } },
   ],
-  hooks: { afterChange: [revalidateGlobal(['/faq', '/drops'])] },
+  hooks: { afterChange: [revalidateGlobal(['/faq', '/editions', '/about', '/shipping'])] },
 }

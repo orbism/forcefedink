@@ -1,0 +1,12 @@
+.back {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  margin-bottom: var(--s-6);
+  font-size: var(--t-xs);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--gold);
+}
+.back svg { width: 1.25rem; fill: none; stroke: currentColor; stroke-width: 1.2; transition: translate var(--snap-dur) var(--snap); }
+.back:hover svg { translate: -0.3rem 0; }

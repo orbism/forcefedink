@@ -17,7 +17,7 @@ export const Faqs: CollectionConfig = {
       type: 'select',
       defaultValue: 'general',
       options: [
-        { label: 'Prints & drops', value: 'prints' },
+        { label: 'Prints & editions', value: 'prints' },
         { label: 'Shipping', value: 'shipping' },
         { label: 'Originals', value: 'originals' },
         { label: 'Commissions', value: 'commissions' },

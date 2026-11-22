@@ -1,0 +1,44 @@
+/* Long-form pages (About, Shipping): text wrapping around one figure. */
+/* A line above the figure and text, over a gilt rule. */
+.byline {
+  max-width: 46rem;
+  margin: 0 0 var(--s-8);
+  padding-bottom: var(--s-4);
+  font-style: italic;
+  color: var(--leaf);
+  border-bottom: 1px solid;
+  border-image: linear-gradient(90deg, var(--gold), var(--indigo-lift) 70%, transparent) 1;
+}
+.wrap { color: var(--haze); max-width: 46rem; }
+.wrap::after { content: ''; display: block; clear: both; }
+.wrap p { max-width: none; }
+.wrap h2, .wrap h3 { font-size: var(--t-md); color: var(--leaf); margin: var(--s-6) 0 var(--s-3); }
+
+.figure {
+  position: relative;
+  margin: 0.35rem 0 var(--s-4);
+  overflow: hidden;
+  background: var(--ink-deep);
+  border: 1px solid var(--line-indigo);
+}
+.portrait { float: left; width: min(14rem, 42%); aspect-ratio: 4 / 5; margin-right: var(--s-6); }
+.landscape { float: right; width: min(26rem, 55%); aspect-ratio: 16 / 9; margin-left: var(--s-6); }
+.figure img { object-fit: cover; }
+
+/* Until the real photo is uploaded: a framed space that says what goes there. */
+.placeholder {
+  position: absolute;
+  inset: var(--s-2);
+  display: grid;
+  place-items: center;
+  border: 1px dashed var(--line);
+  font-size: var(--t-xs);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--gold-dim);
+}
+
+/* Tight sheets: the landscape figure stacks on top, full width. */
+@media (max-width: 559px) {
+  .landscape { float: none; width: 100%; margin: 0 0 var(--s-6); }
+}

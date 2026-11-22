@@ -7,7 +7,7 @@
   padding: var(--s-4);
   background: color-mix(in srgb, var(--ink-deep) 78%, transparent);
   backdrop-filter: blur(4px);
-  animation: fade 200ms linear;
+  animation: fade var(--snap-dur) var(--snap);
 }
 
 .panel {
@@ -18,7 +18,7 @@
   padding: var(--s-8);
   background: var(--canvas);
   border: 1px solid var(--line);
-  animation: rise 320ms var(--ease-ink);
+  animation: rise var(--throw-dur) var(--throw);
 }
 
 .close {

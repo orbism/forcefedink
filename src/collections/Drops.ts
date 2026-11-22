@@ -15,6 +15,8 @@ export const Drops: CollectionConfig = {
     useAsTitle: 'title',
     defaultColumns: ['title', 'status', 'editionsSold', 'editionSize', 'released'],
     group: 'Shop',
+    // Retired: moved into Products. Kept (hidden) until the copy is verified, then removed.
+    hidden: true,
   },
   access: { read: anyone, create: isAdmin, update: isAdmin, delete: isAdmin },
   defaultSort: '-released',

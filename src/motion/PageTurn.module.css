@@ -1,0 +1,16 @@
+/* The outgoing sheet: fixed where it was, under the incoming page's head and sheet. */
+.ghost {
+  position: fixed !important;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  transition:
+    transform 560ms var(--leave) 180ms,
+    filter 560ms var(--snap) 180ms;
+}
+/* A beat after the new sheet starts in, the old one retracts the way it came (the clone keeps
+   the old stage's data-from). */
+.ghost[data-go] { filter: brightness(0.6); }
+.ghost[data-go][data-from='bottom'] { transform: translate3d(0, 100%, 0); }
+.ghost[data-go][data-from='left'] { transform: translate3d(-100%, 0, 0); }
+.ghost[data-go][data-from='right'] { transform: translate3d(100%, 0, 0); }

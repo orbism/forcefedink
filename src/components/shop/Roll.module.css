@@ -1,0 +1,4 @@
+.roll { display: inline-flex; height: 1em; line-height: 1; overflow: hidden; vertical-align: -0.12em; font-variant-numeric: lining-nums tabular-nums; }
+.col { display: flex; flex-direction: column; transition: translate var(--throw-dur) var(--throw); }
+.col > span { height: 1em; }
+@media (prefers-reduced-motion: reduce) { .col { transition: none; } }

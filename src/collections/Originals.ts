@@ -6,7 +6,7 @@ import { revalidateCollection, revalidateCollectionDelete } from '../hooks/reval
 /** The one-of-one drawing behind an artwork. Price may be blank, meaning "Contact". */
 export const Originals: CollectionConfig = {
   slug: 'originals',
-  admin: { useAsTitle: 'title', defaultColumns: ['title', 'status', 'price'], group: 'Shop' },
+  admin: { useAsTitle: 'title', defaultColumns: ['title', 'status', 'price'], group: 'Shop', hidden: true }, // Retired: moved into Products; removed once the copy is verified.
   access: { read: anyone, create: isAdmin, update: isAdmin, delete: isAdmin },
   fields: [
     {

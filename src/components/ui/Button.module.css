@@ -1,4 +1,6 @@
 .btn {
+  position: relative;
+  overflow: hidden;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -10,18 +12,22 @@
   font-size: var(--t-xs);
   letter-spacing: var(--tracking-wide);
   text-transform: uppercase;
-  color: var(--ink);
-  background: var(--gold);
-  border: 1px solid var(--gold);
-  transition: background 200ms linear, color 200ms linear;
+  /* Indigo marks what you can act on; gold stays the voice. */
+  color: var(--leaf);
+  background: var(--indigo);
+  border: 1px solid var(--indigo-lift);
+  transition: background-color var(--snap-dur) var(--snap), color var(--snap-dur) var(--snap), border-color var(--snap-dur) var(--snap), scale var(--snap-dur) var(--snap);
 }
-.btn:hover { background: var(--gold-hot); border-color: var(--gold-hot); color: var(--ink); }
+.btn:hover { background: var(--indigo-lift); color: var(--paper); }
+/* Gives under the finger. */
+.btn:active:not(.disabled) { scale: 0.965; }
 
 .ghost {
   color: var(--gold);
   background: transparent;
+  border-color: var(--line-indigo);
 }
-.ghost:hover { background: transparent; color: var(--gold-hot); border-color: var(--gold-hot); }
+.ghost:hover { background: color-mix(in srgb, var(--indigo) 45%, transparent); color: var(--leaf); border-color: var(--indigo-lift); }
 
 .disabled {
   color: var(--sold);

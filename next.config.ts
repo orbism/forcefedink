@@ -25,6 +25,11 @@ const nextConfig: NextConfig = {
       { protocol: 'https', hostname: '*.public.blob.vercel-storage.com' },
     ],
   },
+  // "Drops" became "Editions" (design round two). Old links keep working.
+  redirects: () => [
+    { source: '/drops', destination: '/editions', permanent: true },
+    { source: '/drops/:slug', destination: '/editions/:slug', permanent: true },
+  ],
   webpack: (webpackConfig) => {
     webpackConfig.resolve.extensionAlias = {
       '.cjs': ['.cts', '.cjs'],

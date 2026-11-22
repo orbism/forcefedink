@@ -4,6 +4,7 @@ import { fileURLToPath } from 'url'
 import { postgresAdapter } from '@payloadcms/db-postgres'
 import { resendAdapter } from '@payloadcms/email-resend'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
+import { ecommercePlugin } from '@payloadcms/plugin-ecommerce'
 import { seoPlugin } from '@payloadcms/plugin-seo'
 import { vercelBlobStorage } from '@payloadcms/storage-vercel-blob'
 import { buildConfig } from 'payload'
@@ -15,6 +16,8 @@ import { Enquiries } from './collections/Enquiries'
 import { Faqs } from './collections/Faqs'
 import { Media } from './collections/Media'
 import { Originals } from './collections/Originals'
+import { productsOverride, variantsOverride } from './collections/Products'
+import { adminOnly, adminOrPublished, isAdmin, isAdminField } from './access'
 import { Series } from './collections/Series'
 import { Subscribers } from './collections/Subscribers'
 import { Users } from './collections/Users'
@@ -60,8 +63,24 @@ export default buildConfig({
 
   sharp,
   plugins: [
+    // Shop: products (editions, originals, merch) with size options and stock, plus carts,
+    // orders and transactions. Payment methods plug in later; until then checkout is off.
+    ecommercePlugin({
+      access: {
+        adminOnlyFieldAccess: isAdminField,
+        adminOrPublishedStatus: adminOrPublished,
+        isAdmin,
+        isDocumentOwner: adminOnly,
+      },
+      customers: { slug: 'users' },
+      products: {
+        productsCollectionOverride: productsOverride,
+        variants: { variantsCollectionOverride: variantsOverride },
+      },
+      payments: { paymentMethods: [] },
+    }),
     seoPlugin({
-      collections: ['artworks', 'drops', 'series'],
+      collections: ['artworks', 'drops', 'series', 'products'],
       uploadsCollection: 'media',
       generateTitle: ({ doc }) => `${doc?.title ?? 'Force Fed Ink'} · Force Fed Ink`,
     }),

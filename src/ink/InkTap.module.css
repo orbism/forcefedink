@@ -1,0 +1,73 @@
+.tap {
+  position: fixed;
+  z-index: 70;
+  width: 60px;
+  height: 36px;
+  pointer-events: none;
+}
+/* The splash starts fading as soon as the drips leave it. */
+.mark {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  animation: tap-hit 160ms var(--throw) both, tap-out 660ms ease-in 160ms forwards;
+}
+
+/*
+ * A drip is a track (clipped at its start) with a head running down it: a bead with a short
+ * watery tail that fades behind it, like a raindrop streaking down glass. Gone once it stops.
+ */
+.drip {
+  position: absolute;
+  width: var(--w);
+  height: calc(var(--len) + var(--w) * 2);
+  margin-left: calc(var(--w) / -2);
+  clip-path: inset(0 -4px -4px);
+  animation: tap-out 240ms ease-in calc(var(--d) + var(--t)) forwards;
+}
+.drip::before,
+.drip::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  translate: -50% 0;
+  animation: tap-run var(--t) cubic-bezier(0.3, 0.5, 0.6, 1) var(--d) both;
+}
+.drip::before {
+  bottom: 100%;
+  width: 100%;
+  height: var(--tail);
+  border-radius: 0 0 99px 99px;
+  background: linear-gradient(transparent, color-mix(in oklab, var(--gold) 70%, transparent));
+}
+.drip::after {
+  top: calc(var(--w) * -1.6);
+  width: calc(var(--w) * 1.7);
+  height: calc(var(--w) * 1.7);
+  border-radius: 50%;
+  background: radial-gradient(circle at 40% 35%, var(--leaf), var(--gold) 60%, var(--brass));
+}
+
+/* Mouse trail speck: faint, random size, sometimes flung long along the stroke. */
+.speck {
+  position: fixed;
+  z-index: 69;
+  width: var(--s);
+  height: var(--s);
+  margin: calc(var(--s) / -2) 0 0 calc(var(--s) / -2);
+  border-radius: 50%;
+  background: var(--gold);
+  pointer-events: none;
+  rotate: var(--a);
+  animation: speck var(--t) ease-out forwards;
+}
+
+@keyframes tap-hit { from { scale: 0.6; opacity: 0; } }
+@keyframes tap-out { to { opacity: 0; } }
+@keyframes tap-run { from { transform: translateY(0); } to { transform: translateY(var(--len)); } }
+@keyframes speck {
+  0% { opacity: var(--o); scale: calc(var(--e) * 0.5) 0.5; }
+  15% { opacity: var(--o); scale: var(--e) 1; }
+  100% { opacity: 0; scale: var(--e) 1; }
+}

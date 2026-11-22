@@ -1,26 +1,31 @@
 import type { Metadata } from 'next'
-import { Cormorant_Garamond, Inter } from 'next/font/google'
+import { Cormorant, Marcellus } from 'next/font/google'
 import type { ReactNode } from 'react'
 
 import { Footer } from '@/components/site/Footer'
 import { Header } from '@/components/site/Header'
 import { InkDefs } from '@/ink/InkDefs'
-import { NavExit } from '@/motion/NavExit'
+import { InkTap } from '@/ink/InkTap'
+import { Gilt } from '@/motion/Gilt'
+import { PageTurn } from '@/motion/PageTurn'
 import { getSiteSettings } from '@/lib/queries'
 import { siteUrl } from '@/lib/site-url'
 import '@/styles/tokens.css'
 import '@/styles/base.css'
 
-const cormorant = Cormorant_Garamond({
+// Cormorant for display, Marcellus for body and UI. Both get size-matched fallbacks
+// (next/font default), so text doesn't shift when the webfont arrives.
+const cormorant = Cormorant({
   subsets: ['latin'],
-  weight: ['300', '400'],
+  weight: 'variable',
   variable: '--font-cormorant',
   display: 'swap',
 })
 
-const inter = Inter({
+const marcellus = Marcellus({
   subsets: ['latin'],
-  variable: '--font-inter',
+  weight: '400',
+  variable: '--font-marcellus',
   display: 'swap',
 })
 
@@ -31,7 +36,7 @@ export const metadata: Metadata = {
     template: '%s · Force Fed Ink',
   },
   description:
-    'Original geometric ink drawings and limited, numbered print drops by Christopher Edward Wedemire.',
+    'Original geometric ink drawings and limited editions by Christopher Edward Wedemire.',
 }
 
 export default async function FrontendLayout({ children }: { children: ReactNode }) {
@@ -40,13 +45,23 @@ export default async function FrontendLayout({ children }: { children: ReactNode
   return (
     // Browser extensions inject attributes on <html> before React loads (seen: an inline
     // --oip-* style). This only silences attribute mismatches on this element, not its tree.
-    <html lang="en" className={`${cormorant.variable} ${inter.variable}`} suppressHydrationWarning>
+    <html lang="en" className={`${cormorant.variable} ${marcellus.variable}`} suppressHydrationWarning>
+      <head>
+        {/* Blur-up images and scroll reveals wait for JavaScript; without it, show everything. */}
+        <noscript>
+          <style>
+            {'img[data-pending],[data-reveal]>*,[data-bleed]>*{opacity:1!important;scale:none!important;translate:none!important;filter:none!important;clip-path:none!important}'}
+          </style>
+        </noscript>
+      </head>
       <body>
         <a href="#main" className="sr-only">
           Skip to content
         </a>
         <InkDefs />
-        <NavExit />
+        <PageTurn />
+        <InkTap />
+        <Gilt />
         <Header />
         <main id="main">{children}</main>
         <Footer settings={settings} />

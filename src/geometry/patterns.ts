@@ -19,6 +19,8 @@ export type GeoPath = {
   weight: number
   /** 0 = the principal star tiles; others are the connecting figures. */
   kind?: number
+  /** Construction: the tile's ruled outline, plus the compass circle on principal tiles. */
+  guide: string
 }
 /** Rendering traits a preset asks for, beyond the linework itself. */
 export type Finish = {
@@ -181,6 +183,20 @@ function hankin(poly: Poly, theta: number): string {
   return d
 }
 
+/** The scaffolding under a motif, as the artist leaves it: ruled tile edges, and on the
+ *  principal tiles the compass circle through the edge midpoints the rays start from. */
+function guide(poly: Poly, kind: number): string {
+  let d = poly.reduce((s, [x, y], i) => s + (i ? 'L' : 'M') + r2(x) + ' ' + r2(y), '') + 'Z'
+  if (kind === 0) {
+    const n = poly.length
+    const cx = poly.reduce((t, p) => t + p[0], 0) / n
+    const cy = poly.reduce((t, p) => t + p[1], 0) / n
+    const r = Math.hypot((poly[0][0] + poly[1][0]) / 2 - cx, (poly[0][1] + poly[1][1]) / 2 - cy)
+    d += `M${r2(cx + r)} ${r2(cy)}A${r2(r)} ${r2(r)} 0 1 1 ${r2(cx - r)} ${r2(cy)}A${r2(r)} ${r2(r)} 0 1 1 ${r2(cx + r)} ${r2(cy)}`
+  }
+  return d
+}
+
 /* --- presets ----------------------------------------------------------------------- */
 
 export type PatternName = keyof typeof PRESETS
@@ -190,11 +206,6 @@ type Preset = {
   tile: number
   theta: number
   accent?: boolean
-  /**
-   * A second contact angle run over the same tiles, drawn pale. Two Hankin passes interleave
-   * into a denser, more intricate field than either alone — the layered look of fine zellij.
-   */
-  weave?: number
 } & Finish
 
 /**
@@ -202,8 +213,6 @@ type Preset = {
  * density against the 1000-unit viewBox.
  */
 export const PRESETS = {
-  /** The landing page's: twelve-fold rosettes woven with needle stars — two passes. */
-  medina: { tiling: 'truncatedHex', tile: 50, theta: 60, weave: 80, accent: true },
   /**
    * Sevillian cuenca y arista: lazo de ocho — raised ribbon strapwork forming eight-point
    * stars, with glazed wells.
@@ -211,22 +220,14 @@ export const PRESETS = {
   cuenca: { tiling: 'truncatedSquare', tile: 74, theta: 67.5, accent: true, interlace: true, glaze: true },
   /** Anatolian (Seljuk, kündekâri): twelve-point stars ringed by six-point rosettes on 4.6.12. */
   konya: { tiling: 'truncatedTrihex', tile: 70, theta: 72, accent: true, interlace: true },
-  /** Moroccan eight-fold: stars in the octagons, crosses in the squares. */
-  fez: { tiling: 'truncatedSquare', tile: 92, theta: 67.5, accent: true },
-  /** Twelve-fold rosettes. */
-  marrakech: { tiling: 'truncatedHex', tile: 70, theta: 60, accent: true },
-  /** Six-fold interlace. */
-  kairouan: { tiling: 'hexagonal', tile: 105, theta: 60 },
   /** Khatam stars on the square grid. */
   tlemcen: { tiling: 'square', tile: 170, theta: 67.5 },
-  /** Open eight-fold lattice, lighter than fez. */
+  /** Open eight-fold lattice. */
   rabat: { tiling: 'truncatedSquare', tile: 85, theta: 55 },
   /** Dense twelve-fold, for small crops. */
   meknes: { tiling: 'truncatedHex', tile: 52, theta: 72 },
   /** Crisp six-point stars with curved-looking triangles between. */
   chefchaouen: { tiling: 'hexagonal', tile: 100, theta: 80 },
-  /** Twelve-fold interlaced rings — the hex ground at a shallow angle, unlike marrakech. */
-  tangier: { tiling: 'truncatedHex', tile: 64, theta: 35, accent: true },
   /** Eight-fold with deep, sharp stars. */
   essaouira: { tiling: 'truncatedSquare', tile: 84, theta: 78, accent: true },
   /** Dense square-grid stars and octagons — tlemcen's cousin at a finer scale. */
@@ -243,17 +244,13 @@ export function pattern(name: PatternName, size = 1000): Geometry {
   const b: Bounds = { x0: 1000 - size, y0: 0, x1: 1000, y1: size }
   const theta = (p.theta * Math.PI) / 180
   const scored: { g: GeoPath; dist: number }[] = []
-  const weave = p.weave === undefined ? null : (p.weave * Math.PI) / 180
   for (const { poly, kind } of TILINGS[p.tiling](p.tile, b)) {
     const [x, y] = poly[0]
     if (x < b.x0 - p.tile || y > b.y1 + p.tile) continue
     const dist = Math.hypot(x - 1000, y)
     const d = hankin(poly, theta)
     // Stars in the large tiles carry the gold; the connecting figures go pale.
-    if (d) scored.push({ g: { d, hue: kind === 0 ? 'gold' : p.accent ? 'haze' : 'white', weight: kind === 0 ? 1 : 0.8, kind }, dist })
-    const w = weave === null ? '' : hankin(poly, weave)
-    // The woven pass follows just behind its tile's main figure.
-    if (w) scored.push({ g: { d: w, hue: 'haze', weight: 0.6 }, dist: dist + 0.5 })
+    if (d) scored.push({ g: { d, hue: kind === 0 ? 'gold' : p.accent ? 'haze' : 'white', weight: kind === 0 ? 1 : 0.8, kind, guide: guide(poly, kind) }, dist })
   }
   scored.sort((m, n) => m.dist - n.dist)
   return {
