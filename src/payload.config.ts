@@ -84,14 +84,12 @@ export default buildConfig({
       uploadsCollection: 'media',
       generateTitle: ({ doc }) => `${doc?.title ?? 'Force Fed Ink'} · Force Fed Ink`,
     }),
-    // Only mount blob storage when a token exists; otherwise uploads land on disk.
-    ...(hasBlob
-      ? [
-          vercelBlobStorage({
-            collections: { media: true },
-            token: env.BLOB_READ_WRITE_TOKEN!,
-          }),
-        ]
-      : []),
+    // Always mounted so the generated admin importMap includes its components (a local build
+    // without a token would otherwise blank the admin on Vercel); only active with a token.
+    vercelBlobStorage({
+      enabled: hasBlob,
+      collections: { media: true },
+      token: env.BLOB_READ_WRITE_TOKEN ?? '',
+    }),
   ],
 })
